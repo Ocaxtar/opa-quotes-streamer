@@ -243,7 +243,19 @@ git push origin oscarcalvo/OPA-194-yfinance-source
 # 8. Actualizar Linear
 # Comentario: "🤖 Agente opa-quotes-streamer: YFinanceSource implementado..."
 # Estado: Done
+
+# 9. Merge a main
+git checkout main
+git pull origin main
+git merge oscarcalvo/OPA-194-yfinance-source --no-ff
+git push origin main
+
+# 10. Eliminar branch (opcional)
+git branch -d oscarcalvo/OPA-194-yfinance-source
+git push origin --delete oscarcalvo/OPA-194-yfinance-source
 ```
+
+**IMPORTANTE**: Siempre hacer merge a `main` al completar una issue antes de comenzar la siguiente.
 
 ### 3. Testing
 
