@@ -147,16 +147,35 @@ python -m opa_quotes_streamer.main
 
 #### Docker Compose
 
+#### Docker Compose
+
 ```bash
-# Iniciar todos los servicios
+# Build e iniciar servicios (streamer + storage mock + prometheus)
 docker-compose up -d
 
 # Ver logs del streamer
 docker-compose logs -f streamer
 
-# Verificar salud
-curl http://localhost:8001/health
+# Verificar métricas
+curl http://localhost:8001/metrics | grep streamer
+
+# Verificar salud del streamer
+docker-compose ps streamer
+
+# Iniciar con Prometheus para monitoreo
+docker-compose --profile monitoring up -d
+
+# Ver dashboard de Prometheus
+# Navegar a http://localhost:9090
+
+# Parar servicios
+docker-compose down
 ```
+
+**Servicios disponibles:**
+- `streamer`: opa-quotes-streamer (puerto 8001)
+- `storage-mock`: MockServer simulando opa-quotes-storage (puerto 8000)
+- `prometheus`: Prometheus metrics scraper (puerto 9090) - profile `monitoring`
 
 ## 🧪 Testing
 

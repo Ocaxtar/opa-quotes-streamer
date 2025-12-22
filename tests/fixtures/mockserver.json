@@ -1,0 +1,16 @@
+{
+  "httpRequest": {
+    "method": "POST",
+    "path": "/quotes/batch"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "headers": {
+      "Content-Type": ["application/json"]
+    },
+    "body": {
+      "inserted": 5,
+      "errors": 0
+    }
+  }
+}

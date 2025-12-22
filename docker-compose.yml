@@ -1,36 +1,79 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: timescale/timescaledb:latest-pg14
-    environment:
-      - POSTGRES_USER=opa
-      - POSTGRES_PASSWORD=opa_password
-      - POSTGRES_DB=quotes
+  # Main streaming service
+  streamer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: opa-quotes-streamer:dev
+    container_name: opa-quotes-streamer
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-  opa-quotes-streamer:
-    build: .
+      - "8001:8001"  # Prometheus metrics
     environment:
-      - DATABASE_URL=postgresql://opa:opa_password@postgres:5432/quotes
+      TICKERS: "AAPL,MSFT,GOOGL,AMZN,TSLA"
+      POLLING_INTERVAL: 5
+      STORAGE_API_URL: "http://storage-mock:1080"
+      MAX_REQUESTS_PER_HOUR: 2000
+      METRICS_PORT: 8001
+      CIRCUIT_BREAKER_THRESHOLD: 5
+      CIRCUIT_BREAKER_TIMEOUT: 60
+      STORAGE_TIMEOUT: 30
+      LOG_LEVEL: "INFO"
+      ENVIRONMENT: "dev"
+    networks:
+      - opa-network
     depends_on:
-      - postgres
-    volumes:
-      - ./src:/app/src
-      - ./config:/app/config
-    command: poetry run python -m opa_quotes_streamer.main
+      - storage-mock
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/metrics')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
+  # Mock opa-quotes-storage for local testing
+  storage-mock:
+    image: mockserver/mockserver:5.15.0
+    container_name: opa-quotes-storage-mock
+    ports:
+      - "8000:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/mockserver.json
+      MOCKSERVER_LOG_LEVEL: "INFO"
+    volumes:
+      - ./tests/fixtures/mockserver.json:/config/mockserver.json:ro
+    networks:
+      - opa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Prometheus for metrics scraping (optional)
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: opa-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./tests/fixtures/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - opa-network
+    profiles:
+      - monitoring
+
+networks:
+  opa-network:
+    driver: bridge
 
 volumes:
-  postgres_data:
-  redis_data:
+  prometheus_data:
+
