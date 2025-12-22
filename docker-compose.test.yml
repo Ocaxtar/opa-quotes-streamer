@@ -1,0 +1,42 @@
+version: '3.9'
+
+# docker-compose.test.yml - Entorno de testing para opa-quotes-streamer
+# Usa puertos no conflictivos para evitar interferencia con entorno de desarrollo
+# Ref: OPA-167, OPA-200
+
+services:
+  timescaledb-test:
+    image: timescale/timescaledb:latest-pg14
+    container_name: opa-quotes-streamer-db-test
+    ports:
+      - "5433:5432"  # Evitar conflicto con dev (5432)
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_opa_quotes
+    tmpfs:
+      - /var/lib/postgresql/data  # In-memory para tests rápidos
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d test_opa_quotes"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - opa-test-network
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: opa-quotes-streamer-redis-test
+    ports:
+      - "6380:6379"  # Evitar conflicto con dev (6379)
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - opa-test-network
+
+networks:
+  opa-test-network:
+    driver: bridge
