@@ -239,25 +239,39 @@ Tests: 5 OK, 0 failures"
 
 # 7. Push
 git push origin oscarcalvo/OPA-194-yfinance-source
-
-# 8. Actualizar Linear
-# Comentario: "🤖 Agente opa-quotes-streamer: YFinanceSource implementado..."
-# Estado: Done
-
-# 9. Merge a main
-git checkout main
-git pull origin main
-git merge oscarcalvo/OPA-194-yfinance-source --no-ff
-git push origin main
-
-# 10. Eliminar branch (opcional)
-git branch -d oscarcalvo/OPA-194-yfinance-source
-git push origin --delete oscarcalvo/OPA-194-yfinance-source
 ```
 
-**IMPORTANTE**: Siempre hacer merge a `main` al completar una issue antes de comenzar la siguiente.
+### 3. Workflow de Merge (OBLIGATORIO)
 
-### 3. Testing
+```bash
+# 1. Asegurar que todos los cambios están commiteados
+git status  # Debe estar limpio
+
+# 2. Actualizar main local
+git checkout main
+git pull origin main
+
+# 3. Mergear branch a main (squash para historia limpia)
+git merge --squash oscarcalvo/OPA-194-yfinance-source
+
+# 4. Commit final con mensaje de issue
+git commit -m "OPA-194: Implementar YFinanceSource con rate limiting"
+
+# 5. Pushear a GitHub
+git push origin main
+
+# 6. Eliminar branch local y remota
+git branch -d oscarcalvo/OPA-194-yfinance-source
+git push origin --delete oscarcalvo/OPA-194-yfinance-source 2>/dev/null || true
+
+# 7. Actualizar Linear
+# - Añadir comentario de cierre: "🤖 Agente opa-quotes-streamer: YFinanceSource implementado..."
+# - Solo ENTONCES: Mover a "Done"
+```
+
+**⚠️ REGLA CRÍTICA**: NO cerrar issue si la branch no está mergeada. Ramas sin mergear = trabajo perdido.
+
+### 4. Testing
 
 #### Tests Unitarios (con mocks)
 
@@ -319,7 +333,7 @@ poetry run pytest --cov=opa_quotes_streamer --cov-report=html
 poetry run pytest tests/unit/test_yfinance_source.py::test_fetch_quotes_success -v
 ```
 
-### 4. Convenciones Linear
+### 5. Convenciones Linear
 
 #### Crear Issue
 
@@ -384,7 +398,7 @@ poetry run pytest tests/unit/test_yfinance_source.py -v
 Issue cerrada.
 ```
 
-### 5. Naming Conventions
+### 6. Naming Conventions
 
 #### Archivos y Módulos
 
@@ -499,202 +513,17 @@ async def publish_batch(self, quotes: List[Quote]):
         return response.json()
 ```
 
-## Troubleshooting
-
-### Error: "Rate limit exceeded"
-
-**Síntoma**: Logs muestran `RateLimitError`, yfinance devuelve HTTP 429
-
-**Diagnóstico**:
-```bash
-# Ver métricas Prometheus
-curl http://localhost:8001/metrics | grep rate_limit_hits
-
-# Ver logs
-docker-compose logs -f streamer | grep "rate_limit"
-```
-
-**Solución**:
-```bash
-# Aumentar intervalo en .env
-POLLING_INTERVAL=10  # De 5s a 10s
-
-# Reducir tickers
-TICKERS=AAPL,MSFT,GOOGL  # De 10 a 3
-
-# Verificar MAX_REQUESTS_PER_HOUR
-MAX_REQUESTS_PER_HOUR=2000  # Default de yfinance
-```
-
-### Error: "Connection refused to storage"
-
-**Síntoma**: `StoragePublisher` falla con `ConnectionRefusedError`
-
-**Diagnóstico**:
-```bash
-# Verificar storage está corriendo
-curl http://localhost:8000/health
-
-# Verificar red Docker
-docker network ls
-docker network inspect opa-quotes-streamer_default
-```
-
-**Solución**:
-```bash
-# En docker-compose.yml, verificar networks
-services:
-  streamer:
-    networks:
-      - opa-network
-  storage:
-    networks:
-      - opa-network
-
-# Reiniciar compose
-docker-compose down
-docker-compose up -d
-```
-
-### Tests fallan con "Event loop is closed"
-
-**Síntoma**: Tests asyncio fallan con error de event loop
-
-**Solución**:
-```python
-# Añadir fixture en conftest.py
-import pytest
-import asyncio
-
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-```
-
-## Métricas y Observabilidad
-
-### Métricas Prometheus
-
-**Expuestas en** `http://localhost:8001/metrics`
-
-```python
-# main.py
-from prometheus_client import Counter, Histogram, Gauge
-
-quotes_fetched = Counter('streamer_quotes_fetched_total', 'Total quotes fetched')
-quotes_published = Counter('streamer_quotes_published_total', 'Total quotes published')
-fetch_duration = Histogram('streamer_fetch_duration_seconds', 'Fetch latency')
-active_tickers = Gauge('streamer_active_tickers', 'Active tickers count')
-errors_total = Counter('streamer_errors_total', 'Errors by type', ['type'])
-
-# Uso
-quotes_fetched.inc(len(quotes))
-with fetch_duration.time():
-    quotes = await yfinance_source.fetch_quotes()
-```
-
-### PipelineLogger
-
-**Propósito**: Logging estructurado con contexto de pipeline
-
-```python
-from shared.utils.pipeline_logger import PipelineLogger
-
-pipeline_logger = PipelineLogger(
-    pipeline_name="opa-quotes-streamer",
-    repository="opa-quotes-streamer"
-)
-
-# Inicio
-pipeline_logger.start(metadata={"tickers": 10, "interval": 5})
-
-# Durante ejecución
-logger.info(f"Fetched {len(quotes)} quotes", extra={
-    "tickers": [q.ticker for q in quotes],
-    "latency": 1.2
-})
-
-# Finalización
-pipeline_logger.complete(
-    status="success",
-    output_records=100,
-    metadata={"avg_latency": 1.5}
-)
-```
-
-## Guía de Migración Rust (Fase 2)
-
-**Objetivo**: Migrar a Rust para ultra-low latency (<100ms) y 1000+ tickers concurrentes.
-
-### Stack Rust
-
-| Crate | Versión | Propósito |
-|-------|---------|-----------|
-| **tokio** | 1.35+ | Async runtime |
-| **tungstenite** | 0.21+ | WebSocket client |
-| **reqwest** | 0.11+ | HTTP client |
-| **serde** | 1.0+ | Serialization |
-| **serde_json** | 1.0+ | JSON parsing |
-
-### Estructura
-
-```
-src/
-├── main.rs                  # Entry point
-├── sources/
-│   ├── mod.rs
-│   ├── base.rs              # DataSource trait
-│   └── iex_cloud.rs         # IEX Cloud WebSocket
-├── publishers/
-│   ├── mod.rs
-│   └── storage.rs           # HTTP client to storage
-└── utils/
-    ├── rate_limiter.rs
-    └── circuit_breaker.rs
-```
-
-### Ejemplo: IEX Cloud WebSocket
-
-```rust
-// sources/iex_cloud.rs
-use tokio_tungstenite::connect_async;
-use serde::Deserialize;
-
-#[derive(Deserialize)]
-struct IEXQuote {
-    symbol: String,
-    price: f64,
-    volume: u64,
-}
-
-pub async fn stream_quotes(tickers: Vec<String>) -> Result<(), Box<dyn Error>> {
-    let url = "wss://ws-api.iextrading.com/1.0/tops";
-    let (ws_stream, _) = connect_async(url).await?;
-    
-    while let Some(msg) = ws_stream.next().await {
-        let quote: IEXQuote = serde_json::from_str(&msg?)?;
-        // Publish to storage
-    }
-    
-    Ok(())
-}
-```
-
-### Plan de Migración
-
-1. **Fase 2a** (Python + Rust POC): Rust streamer en paralelo, comparar métricas
-2. **Fase 2b** (Rust mayoritario): Rust 80%, Python 20% (legacy tickers)
-3. **Fase 2c** (Rust completo): Deprecar Python, solo Rust
-
 ## Referencias
 
-- **Repositorio Supervisor**: [OPA_Machine](https://github.com/Ocaxtar/OPA_Machine)
-- **Contratos**: [`docs/contracts/data-models/quotes.md`](../OPA_Machine/docs/contracts/data-models/quotes.md)
-- **ADR-009**: Secuenciación de fases (Python → Rust)
-- **Linear**: [Proyecto opa-quotes-streamer](https://linear.app/opa-machine/team/OPA/project/opa-quotes-streamer)
+**Supervisor**:
+- Arquitectura: `OPA_Machine/docs/architecture/ecosystem-overview.md`
+- Contratos: `OPA_Machine/docs/contracts/data-models/quotes.md`
+
+**Repos relacionados**:
+- [opa-quotes-storage](https://github.com/Ocaxtar/opa-quotes-storage)
+- [opa-quotes-api](https://github.com/Ocaxtar/opa-quotes-api)
 
 ---
 
-📝 **Este documento debe actualizarse conforme evolucione el servicio**
+📝 **Este documento debe actualizarse conforme evolucione el repositorio**  
+**Última sincronización con supervisor**: 2025-12-22
