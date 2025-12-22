@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class Quote(BaseModel):
@@ -71,9 +71,8 @@ class Quote(BaseModel):
         """Convert source to lowercase."""
         return v.lower().strip()
     
-    class Config:
-        """Pydantic model configuration."""
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "ticker": "AAPL",
                 "price": 178.45,
@@ -88,3 +87,4 @@ class Quote(BaseModel):
                 "previous_close": 177.80
             }
         }
+    )
