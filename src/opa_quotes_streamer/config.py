@@ -35,9 +35,9 @@ class Settings(BaseSettings):
     environment: str = Field(default="dev", pattern="^(dev|staging|prod)$")
     
     # Streaming configuration
-    tickers: List[str] = Field(
-        default=["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"],
-        description="Tickers to stream"
+    tickers: str = Field(
+        default="AAPL,MSFT,GOOGL,AMZN,TSLA",
+        description="Comma-separated tickers to stream"
     )
     polling_interval: int = Field(
         default=5,
@@ -83,7 +83,7 @@ class Settings(BaseSettings):
     )
     
     # Metrics
-    prometheus_port: int = Field(
+    metrics_port: int = Field(
         default=8001,
         ge=1024,
         le=65535,
