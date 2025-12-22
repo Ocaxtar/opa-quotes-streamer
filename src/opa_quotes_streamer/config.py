@@ -1,0 +1,107 @@
+"""Configuration management using Pydantic Settings."""
+
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables.
+    
+    Attributes:
+        app_name: Application name
+        version: Application version
+        environment: Runtime environment (dev, staging, prod)
+        tickers: List of ticker symbols to stream
+        polling_interval: Seconds between polling cycles
+        max_requests_per_hour: Rate limit for API requests
+        storage_api_url: URL of opa-quotes-storage service
+        storage_timeout: HTTP timeout for storage requests (seconds)
+        circuit_breaker_threshold: Failures before circuit opens
+        circuit_breaker_timeout: Seconds before circuit half-opens
+        log_level: Logging level (DEBUG, INFO, WARNING, ERROR)
+        prometheus_port: Port for Prometheus metrics endpoint
+    """
+    
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False
+    )
+    
+    # Application
+    app_name: str = "opa-quotes-streamer"
+    version: str = "0.1.0"
+    environment: str = Field(default="dev", pattern="^(dev|staging|prod)$")
+    
+    # Streaming configuration
+    tickers: List[str] = Field(
+        default=["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"],
+        description="Tickers to stream"
+    )
+    polling_interval: int = Field(
+        default=5,
+        ge=1,
+        le=300,
+        description="Seconds between polls"
+    )
+    
+    # Rate limiting
+    max_requests_per_hour: int = Field(
+        default=2000,
+        ge=1,
+        description="Maximum API requests per hour"
+    )
+    
+    # Storage integration
+    storage_api_url: str = Field(
+        default="http://localhost:8000",
+        description="opa-quotes-storage URL"
+    )
+    storage_timeout: int = Field(
+        default=30,
+        ge=1,
+        description="Storage request timeout (seconds)"
+    )
+    
+    # Circuit breaker
+    circuit_breaker_threshold: int = Field(
+        default=5,
+        ge=1,
+        description="Failures before opening circuit"
+    )
+    circuit_breaker_timeout: int = Field(
+        default=60,
+        ge=1,
+        description="Seconds before half-open attempt"
+    )
+    
+    # Logging
+    log_level: str = Field(
+        default="INFO",
+        pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$"
+    )
+    
+    # Metrics
+    prometheus_port: int = Field(
+        default=8001,
+        ge=1024,
+        le=65535,
+        description="Prometheus metrics port"
+    )
+
+
+# Global settings instance
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Get or create settings instance (singleton pattern).
+    
+    Returns:
+        Settings instance
+    """
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
