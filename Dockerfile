@@ -21,7 +21,6 @@ RUN poetry config virtualenvs.create false && \
 
 # Copy application code
 COPY src/ ./src/
-COPY shared/ ./shared/
 
 # Production stage
 FROM python:3.12-slim AS production
@@ -34,7 +33,6 @@ COPY --from=base /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY --from=base /app/src ./src
-COPY --from=base /app/shared ./shared
 
 # Create non-root user
 RUN useradd -m -u 1000 streamer && \
