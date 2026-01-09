@@ -42,6 +42,7 @@ USER streamer
 
 # Environment variables (overridable)
 ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src \
     TICKERS="AAPL,MSFT,GOOGL,AMZN,TSLA" \
     POLLING_INTERVAL=5 \
     STORAGE_API_URL="http://localhost:8000" \
