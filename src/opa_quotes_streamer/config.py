@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # Application
     app_name: str = "opa-quotes-streamer"
     version: str = "0.1.0"
-    environment: str = Field(default="dev", pattern="^(dev|staging|prod)$")
+    environment: str = Field(default="dev", pattern="^(dev|staging|prod|integration)$")
     
     # Streaming configuration
     tickers: str = Field(
