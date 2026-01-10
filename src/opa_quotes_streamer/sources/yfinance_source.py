@@ -143,7 +143,6 @@ class YFinanceSource(BaseDataSource):
                 period="1d",
                 interval="1m",
                 progress=False,
-                show_errors=False,
                 threads=True
             )
             
