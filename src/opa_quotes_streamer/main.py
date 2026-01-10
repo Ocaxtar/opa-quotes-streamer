@@ -54,11 +54,7 @@ class StreamingService:
     
     async def start(self):
         """Start streaming service."""
-        self.pipeline_logger.start(metadata={
-            "env": settings.environment,
-            "tickers": settings.tickers,
-            "polling_interval": settings.polling_interval
-        })
+        self.pipeline_logger.start(triggered_by="streamer-init")
         logger.info(f"Starting {settings.app_name} v{settings.version}")
         logger.info(f"Tickers: {settings.tickers}")
         logger.info(f"Polling interval: {settings.polling_interval}s")
