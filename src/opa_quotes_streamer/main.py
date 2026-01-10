@@ -12,7 +12,7 @@ from opa_quotes_streamer.logging_setup import setup_logging
 from opa_quotes_streamer.sources.yfinance_source import YFinanceSource
 from opa_quotes_streamer.publishers.storage_publisher import StoragePublisher, PublisherError
 from opa_quotes_streamer.metrics import StreamingMetrics
-from shared.utils.pipeline_logger import PipelineLogger
+from opa_shared_utils.utils.pipeline_logger import PipelineLogger
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -189,4 +189,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
