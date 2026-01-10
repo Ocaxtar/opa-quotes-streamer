@@ -89,6 +89,12 @@ class Settings(BaseSettings):
         le=65535,
         description="Prometheus metrics port"
     )
+    
+    # Database (for pipeline logging)
+    database_url: str = Field(
+        default="postgresql://opa_user:opa_password@localhost:5432/opa_quotes",
+        description="PostgreSQL connection string for pipeline logging"
+    )
 
 
 # Global settings instance

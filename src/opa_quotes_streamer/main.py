@@ -25,8 +25,9 @@ class StreamingService:
     
     def __init__(self):
         self.pipeline_logger = PipelineLogger(
-            pipeline_name="opa-quotes-streamer",
-            repository="opa-quotes-streamer"
+            repository="opa-quotes-streamer",
+            pipeline_name="quotes-streaming",
+            db_url=settings.database_url
         )
         self.running = False
         
