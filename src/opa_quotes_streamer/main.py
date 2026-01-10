@@ -31,9 +31,12 @@ class StreamingService:
         )
         self.running = False
         
+        # Parse tickers from settings
+        self.tickers = [t.strip() for t in settings.tickers.split(",")]
+        logger.info(f"Configured tickers: {self.tickers}")
+        
         # Initialize components
         self.source = YFinanceSource(
-            tickers=settings.tickers.split(","),
             max_requests_per_hour=settings.max_requests_per_hour
         )
         self.publisher = StoragePublisher(
@@ -88,7 +91,7 @@ class StreamingService:
             try:
                 # Fetch quotes
                 fetch_start = time.time()
-                quotes = await self.source.fetch_quotes()
+                quotes = await self.source.fetch_quotes(self.tickers)
                 fetch_duration = time.time() - fetch_start
                 
                 if quotes:
