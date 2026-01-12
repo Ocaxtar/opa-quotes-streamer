@@ -36,6 +36,123 @@ yfinance API → opa-quotes-streamer → opa-quotes-storage → opa-quotes-api
 - **Crear issues en Linear**: Solo en proyecto `opa-quotes-streamer`, label `opa-quotes-streamer`
 - **Commits con prefijo**: `OPA-XXX: Descripción` (XXX = número de issue Linear)
 
+## 🔧 Gestión de Tools MCP
+
+### Activación de Tools Linear/GitHub
+
+Algunas herramientas MCP (Model Context Protocol) requieren activación explícita antes de usarse. **SIEMPRE** activa las tools necesarias al inicio de tu trabajo con este repositorio.
+
+#### Tools que Requieren Activación
+
+| Tool Category | Activation Function | Tools Incluidas |
+|---------------|---------------------|-----------------|
+| Issue Management | `activate_issue_management_tools()` | `mcp_linear_create_comment`, `mcp_linear_create_issue`, `mcp_linear_create_issue_label`, `mcp_linear_create_project`, `mcp_linear_update_issue` |
+| Repository Management | `activate_repository_management_tools()` | `mcp_github_create_branch`, `mcp_github_create_pull_request`, `mcp_github_merge_pull_request`, etc. |
+| Pull Request Review | `activate_pull_request_review_tools()` | `mcp_github_add_comment_to_pending_review`, `mcp_github_pull_request_review_write`, etc. |
+
+#### Workflow de Activación
+
+```python
+# Al inicio de trabajo con Linear
+<invoke name="activate_issue_management_tools" />
+
+# Al trabajar con GitHub PRs
+<invoke name="activate_repository_management_tools" />
+
+# Al revisar PRs
+<invoke name="activate_pull_request_review_tools" />
+```
+
+#### Patrón de Uso Seguro
+
+**✅ CORRECTO**:
+1. Detectar necesidad de tool (ej: crear comentario en Linear)
+2. Activar categoría de tools
+3. Usar tool específico
+
+**❌ INCORRECTO**:
+1. Intentar usar tool sin activar
+2. Recibir error "Tool not found"
+3. Continuar sin completar acción
+
+#### Manejo de Errores
+
+Si recibes `Tool not found or not activated`:
+1. **NO continues** sin completar la acción
+2. Activa la categoría de tools correspondiente
+3. **Reintenta** la operación
+4. Si persiste error, devuelve control al usuario
+
+### Tools Siempre Disponibles
+
+Estas tools NO requieren activación:
+- `mcp_linear_get_issue`, `mcp_linear_list_comments`, `mcp_linear_list_issues`
+- `file_search`, `grep_search`, `read_file`, `replace_string_in_file`
+- `run_in_terminal`, `get_terminal_output`
+- Git commands via terminal
+
+## 🛡️ Validación de Convenciones
+
+### Checkpoint Pre-Acción
+
+Antes de ejecutar acciones críticas, **VALIDA** que cumples las convenciones de este repositorio:
+
+#### ✅ Pre-Commit Checklist
+
+- [ ] **Mensaje de commit** incluye identificador de issue (ej: `OPA-232: ...`)
+- [ ] **Branch** sigue convención: `oscarcalvo/OPA-XXX-descripcion-corta`
+- [ ] **Tests** pasan localmente (`poetry run pytest`)
+- [ ] **Linter** sin errores
+- [ ] **Issue en Linear** existe y está en estado correcto
+
+#### ✅ Pre-Issue Close Checklist
+
+- [ ] **Comentario de cierre** añadido con prefijo `🤖 Agente opa-quotes-streamer:`
+- [ ] **Pre-checks** documentados en comentario
+- [ ] **Problema identificado** explicado
+- [ ] **Solución implementada** detallada
+- [ ] **Commits** referenciados con hash y link
+- [ ] **Verificación** realizada y documentada
+- [ ] **Branch mergeada** y eliminada (local + remota)
+
+#### ✅ Pre-PR Checklist
+
+- [ ] **Título** incluye identificador de issue
+- [ ] **Descripción** explica cambios y rationale
+- [ ] **Tests** incluidos para nuevas features
+- [ ] **Docs** actualizadas si API cambió
+
+### Detección de Violaciones
+
+Si detectas que estás a punto de violar una convención:
+
+1. **DETENTE** inmediatamente
+2. **INFORMA** al usuario del problema detectado
+3. **SUGIERE** corrección
+4. **ESPERA** confirmación del usuario antes de continuar
+
+**Ejemplo**:
+```
+⚠️ DETECCIÓN DE VIOLACIÓN
+
+Convención: "Commits DEBEN referenciar issue Linear"
+Acción planeada: git commit -m "Fix bug"
+Problema: Mensaje sin identificador OPA-XXX
+
+¿Deseas que corrija el mensaje a "OPA-232: Fix bug"?
+```
+
+### Recuperación ante Violaciones
+
+Si ya violaste una convención:
+
+1. **RECONOCE** el error
+2. **CORRIGE** si es posible:
+   - Commit sin issue: `git commit --amend -m "OPA-XXX: ..."`
+   - Issue cerrado sin comentario: Añadir comentario retroactivamente
+   - Branch sin mergear: `git checkout main && git merge --squash ...`
+3. **DOCUMENTA** la corrección en Linear/GitHub
+
 ## Stack Tecnológico (Fase 1)
 
 ### Lenguaje y Runtime
