@@ -13,6 +13,7 @@ from opa_quotes_streamer.sources.yfinance_source import YFinanceSource
 from opa_quotes_streamer.publishers.storage_publisher import StoragePublisher, PublisherError
 from opa_quotes_streamer.metrics import StreamingMetrics
 from opa_shared_utils.utils.pipeline_logger import PipelineLogger
+from sqlalchemy.exc import OperationalError
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -54,7 +55,12 @@ class StreamingService:
     
     async def start(self):
         """Start streaming service."""
-        self.pipeline_logger.start(triggered_by="streamer-init")
+        try:
+            self.pipeline_logger.start(triggered_by="streamer-init")
+        except OperationalError as e:
+            logger.warning(f"PipelineLogger DB unavailable, using stdout logging: {e}")
+            logger.info("Pipeline started without DB tracking (fallback mode)")
+        
         logger.info(f"Starting {settings.app_name} v{settings.version}")
         logger.info(f"Tickers: {settings.tickers}")
         logger.info(f"Polling interval: {settings.polling_interval}s")
@@ -70,11 +76,14 @@ class StreamingService:
         except Exception as e:
             logger.error(f"Streaming error: {e}", exc_info=True)
             self.metrics.record_error("critical")
-            self.pipeline_logger.complete(
-                status="failed",
-                output_records=self.total_quotes_published,
-                metadata={"error": str(e), "cycles": self.cycle_count}
-            )
+            try:
+                self.pipeline_logger.complete(
+                    status="failed",
+                    output_records=self.total_quotes_published,
+                    metadata={"error": str(e), "cycles": self.cycle_count}
+                )
+            except OperationalError:
+                logger.warning("Could not log pipeline completion to DB (DB unavailable)")
             raise
     
     async def stream_loop(self):
@@ -143,15 +152,19 @@ class StreamingService:
                 await asyncio.sleep(5)  # Backoff on error
         
         # Finalize
-        self.pipeline_logger.complete(
-            status="success",
-            output_records=self.total_quotes_published,
-            metadata={
-                "cycles": self.cycle_count,
-                "quotes_fetched": self.total_quotes_fetched,
-                "quotes_published": self.total_quotes_published
-            }
-        )
+        try:
+            self.pipeline_logger.complete(
+                status="success",
+                output_records=self.total_quotes_published,
+                metadata={
+                    "cycles": self.cycle_count,
+                    "quotes_fetched": self.total_quotes_fetched,
+                    "quotes_published": self.total_quotes_published
+                }
+            )
+        except OperationalError:
+            logger.warning("Could not log pipeline completion to DB (DB unavailable)")
+        
         logger.info(f"Stream loop exited after {self.cycle_count} cycles")
     
     async def stop(self):
