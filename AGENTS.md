@@ -44,11 +44,29 @@ Algunas herramientas MCP (Model Context Protocol) requieren activación explíci
 
 #### Tools que Requieren Activación
 
-| Tool Category | Activation Function | Tools Incluidas |
-|---------------|---------------------|-----------------|
-| Issue Management | `activate_issue_management_tools()` | `mcp_linear_create_comment`, `mcp_linear_create_issue`, `mcp_linear_create_issue_label`, `mcp_linear_create_project`, `mcp_linear_update_issue` |
-| Repository Management | `activate_repository_management_tools()` | `mcp_github_create_branch`, `mcp_github_create_pull_request`, `mcp_github_merge_pull_request`, etc. |
-| Pull Request Review | `activate_pull_request_review_tools()` | `mcp_github_add_comment_to_pending_review`, `mcp_github_pull_request_review_write`, etc. |
+**Linear:**
+
+| Grupo Linear | Tool de Activación | Cuándo Usar |
+|--------------|-------------------|-------------|
+| **Issues/Labels/Proyectos** | `activate_issue_management_tools()` | Crear/actualizar issues, labels, proyectos |
+| **Documentos** | `activate_document_management_tools()` | Crear/actualizar documentos Linear |
+| **Tracking** | `activate_issue_tracking_tools()` | Obtener status, attachments, branches |
+| **Workspace** | `activate_workspace_overview_tools()` | Listar proyectos, labels, teams, users |
+| **Teams/Users** | `activate_team_and_user_management_tools()` | Info de teams, users, ciclos |
+
+**GitHub:**
+
+| Grupo GitHub | Tool de Activación | Cuándo Usar |
+|--------------|-------------------|-------------|
+| **PRs Review** | `activate_pull_request_review_tools()` | Crear/revisar PRs, comentarios review |
+| **Repos/Branches** | `activate_repository_management_tools()` | Crear repos, branches, PRs, merges |
+| **Files** | `activate_file_management_tools()` | Eliminar/obtener archivos en GitHub |
+| **Info Repos** | `activate_repository_information_tools()` | Commits, releases, tags, issues, profile |
+| **Releases/Tags** | `activate_release_and_tag_management_tools()` | Listar/obtener releases y tags |
+| **Search** | `activate_search_and_discovery_tools()` | Buscar código, repos, usuarios |
+| **Branches/Commits** | `activate_branch_and_commit_tools()` | Listar branches, obtener commits |
+
+**Nota**: Pylance MCP tools están siempre activas (no requieren activación).
 
 #### Workflow de Activación
 
@@ -75,6 +93,19 @@ Algunas herramientas MCP (Model Context Protocol) requieren activación explíci
 2. Recibir error "Tool not found"
 3. Continuar sin completar acción
 
+**Ejemplo correcto**:
+```markdown
+- User: "Crea issue para X"
+- Agent: activate_issue_management_tools() → mcp_linear_create_issue(...)
+```
+
+**Ejemplo incorrecto** ❌:
+```markdown
+- User: "Crea issue para X"
+- Agent: mcp_linear_create_issue(...) → ERROR
+- Agent: "No pude crear issue, continuando..." → ❌ VIOLACIÓN
+```
+
 #### Manejo de Errores
 
 Si recibes `Tool not found or not activated`:
@@ -82,6 +113,23 @@ Si recibes `Tool not found or not activated`:
 2. Activa la categoría de tools correspondiente
 3. **Reintenta** la operación
 4. Si persiste error, devuelve control al usuario
+
+#### Detección de Fallo Recurrente
+
+Si una tool falla **2+ veces** tras activar:
+
+```markdown
+⚠️ **Fallo Recurrente de Tool MCP**
+
+He intentado usar `mcp_linear_create_issue` pero falla incluso tras activar el grupo.
+
+**Pasos realizados**:
+1. activate_issue_management_tools() ✅
+2. mcp_linear_create_issue(...) ❌ Error: [error específico]
+3. Reintento → ❌ Error persistente
+
+**Solicitud**: ¿Puedes verificar permisos MCP o reportar bug?
+```
 
 ### Tools Siempre Disponibles
 
