@@ -127,12 +127,12 @@ class StoragePublisher(BasePublisher):
         quotes_data = [q.model_dump(mode='json') for q in quotes]
         payload = {"quotes": quotes_data}
         
-        logger.debug(f"Posting {len(quotes_data)} quotes to {self.storage_url}/quotes/batch")
+        logger.debug(f"Posting {len(quotes_data)} quotes to {self.storage_url}/v1/quotes/batch")
         
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
                 response = await client.post(
-                    f"{self.storage_url}/quotes/batch",
+                    f"{self.storage_url}/v1/quotes/batch",
                     json=payload
                 )
                 

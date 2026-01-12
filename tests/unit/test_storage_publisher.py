@@ -215,8 +215,8 @@ class TestStoragePublisher:
             assert call_args[1]['json']['quotes'] is not None
             assert len(call_args[1]['json']['quotes']) == 2
             
-            # Verify URL
-            assert call_args[0][0] == "http://localhost:8000/quotes/batch"
+            # Verify URL includes /v1 prefix
+            assert call_args[0][0] == "http://localhost:8000/v1/quotes/batch"
     
     @pytest.mark.asyncio
     async def test_post_quotes_timeout_applied(self, sample_quotes):
