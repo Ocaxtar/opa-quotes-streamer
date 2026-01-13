@@ -1,6 +1,7 @@
 """Quote data model."""
 
-from datetime import datetime
+import re
+from datetime import datetime, timezone
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
@@ -61,15 +62,49 @@ class Quote(BaseModel):
     
     @field_validator('ticker')
     @classmethod
-    def ticker_uppercase(cls, v: str) -> str:
-        """Convert ticker to uppercase."""
-        return v.upper().strip()
+    def validate_ticker_format(cls, v: str) -> str:
+        """Validate ticker format and convert to uppercase (INV-002).
+        
+        Contract invariant INV-002: Ticker must match ^[A-Z]{1,5}$
+        """
+        v = v.upper().strip()
+        if not re.match(r'^[A-Z]{1,5}$', v):
+            raise ValueError(
+                f"Invalid ticker format: {v}. Must match ^[A-Z]{{1,5}}$ (INV-002)"
+            )
+        return v
+    
+    @field_validator('timestamp')
+    @classmethod
+    def validate_utc_timestamp(cls, v: datetime) -> datetime:
+        """Validate timestamp is in UTC timezone (INV-003).
+        
+        Contract invariant INV-003: Timestamp must be ISO 8601 UTC.
+        """
+        if v.tzinfo is None:
+            raise ValueError(
+                "Timestamp must have timezone info. Use datetime.now(timezone.utc) (INV-003)"
+            )
+        if v.tzinfo != timezone.utc:
+            raise ValueError(
+                f"Timestamp must be UTC, got {v.tzinfo}. Convert to UTC before creating Quote (INV-003)"
+            )
+        return v
     
     @field_validator('source')
     @classmethod
-    def source_lowercase(cls, v: str) -> str:
-        """Convert source to lowercase."""
-        return v.lower().strip()
+    def validate_source_enum(cls, v: str) -> str:
+        """Validate source is one of allowed values and convert to lowercase (INV-005).
+        
+        Contract invariant INV-005: Source must be 'yfinance', 'fmp', or 'manual'.
+        """
+        v = v.lower().strip()
+        valid_sources = ["yfinance", "fmp", "manual"]
+        if v not in valid_sources:
+            raise ValueError(
+                f"Invalid source: {v}. Must be one of {valid_sources} (INV-005)"
+            )
+        return v
     
     model_config = ConfigDict(
         json_schema_extra={

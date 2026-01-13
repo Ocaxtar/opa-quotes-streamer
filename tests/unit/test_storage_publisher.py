@@ -330,3 +330,59 @@ class TestStoragePublisher:
             assert 'volume' in quotes_data[0]
             assert 'timestamp' in quotes_data[0]
             assert 'source' in quotes_data[0]
+    
+    @pytest.mark.asyncio
+    async def test_publish_batch_max_size_limit(self, sample_quotes):
+        """INV-006: Batch exceeding 1000 quotes rejected."""
+        publisher = StoragePublisher("http://localhost:8000")
+        
+        # Create 1001 quotes
+        large_batch = [sample_quotes[0]] * 1001
+        
+        with pytest.raises(ValueError, match="exceeds max limit of 1000"):
+            await publisher.publish_batch(large_batch)
+    
+    @pytest.mark.asyncio
+    async def test_publish_batch_exactly_1000_allowed(self, sample_quotes):
+        """INV-006: Batch of exactly 1000 quotes allowed."""
+        publisher = StoragePublisher("http://localhost:8000")
+        
+        mock_response = Mock()
+        mock_response.json.return_value = {"inserted": 1000, "errors": 0}
+        mock_response.raise_for_status = Mock()
+        
+        with patch('httpx.AsyncClient') as mock_client_class:
+            mock_client = AsyncMock()
+            mock_post = AsyncMock(return_value=mock_response)
+            mock_client.post = mock_post
+            mock_client.__aenter__.return_value = mock_client
+            mock_client.__aexit__.return_value = AsyncMock()
+            mock_client_class.return_value = mock_client
+            
+            batch_1000 = [sample_quotes[0]] * 1000
+            result = await publisher.publish_batch(batch_1000)
+            
+            assert result == 1000
+            mock_post.assert_called_once()
+    
+    @pytest.mark.asyncio
+    async def test_publish_batch_small_allowed(self, sample_quotes):
+        """INV-001: Small batch (1 quote) allowed."""
+        publisher = StoragePublisher("http://localhost:8000")
+        
+        mock_response = Mock()
+        mock_response.json.return_value = {"inserted": 1, "errors": 0}
+        mock_response.raise_for_status = Mock()
+        
+        with patch('httpx.AsyncClient') as mock_client_class:
+            mock_client = AsyncMock()
+            mock_post = AsyncMock(return_value=mock_response)
+            mock_client.post = mock_post
+            mock_client.__aenter__.return_value = mock_client
+            mock_client.__aexit__.return_value = AsyncMock()
+            mock_client_class.return_value = mock_client
+            
+            result = await publisher.publish_batch([sample_quotes[0]])
+            
+            assert result == 1
+            mock_post.assert_called_once()

@@ -67,6 +67,10 @@ class StoragePublisher(BasePublisher):
     async def publish_batch(self, quotes: List[Quote]) -> int:
         """Publish a batch of quotes to storage service.
         
+        Validates contract invariants:
+        - INV-001: Array is non-empty (1-1000 items)
+        - INV-006: Batch does not exceed 1000 quotes
+        
         Args:
             quotes: List of Quote objects to publish
             
@@ -74,11 +78,20 @@ class StoragePublisher(BasePublisher):
             Number of quotes successfully published
             
         Raises:
+            ValueError: If batch size exceeds 1000 quotes (INV-006)
             PublisherError: If publishing fails after circuit breaker logic
         """
-        if not quotes:
+        # INV-001: Non-empty array
+        if not quotes or len(quotes) == 0:
             logger.warning("publish_batch called with empty quotes list")
             return 0
+        
+        # INV-006: Max 1000 quotes per batch
+        if len(quotes) > 1000:
+            raise ValueError(
+                f"Batch size {len(quotes)} exceeds max limit of 1000 (INV-006). "
+                f"Split into multiple batches."
+            )
         
         logger.info(f"Publishing batch of {len(quotes)} quotes to storage")
         
