@@ -271,9 +271,104 @@ curl http://localhost:8001/health
 |----------|-----------|----------------|----------|
 | **opa-quotes-storage** | HTTP POST | Batches de quotes (10-100) | `/quotes/batch` |
 
-### Contratos
+### Contratos de API
 
-Ver [`docs/contracts/data-models/quotes.md`](../OPA_Machine/docs/contracts/data-models/quotes.md) en repositorio supervisor.
+Este servicio actúa como **Producer** en el flujo de cotizaciones:
+
+#### POST /quotes/batch (Producer)
+
+**Contract**: [Quotes Batch Contract](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/contracts/apis/quotes-batch.md)
+
+- **Role**: Producer (genera y envía quotes)
+- **Consumer**: opa-quotes-api
+- **Invariants**: INV-001 to INV-007 (Producer guarantees)
+- **Validation**: Unit tests in `tests/test_storage_publisher.py`
+
+**Contract invariants satisfied**:
+- ✅ **INV-001**: Send quotes array (non-empty, 1-1000 items)
+- ✅ **INV-002**: Validate ticker format `^[A-Z]{1,5}$` before sending
+- ✅ **INV-003**: Timestamp in ISO 8601 UTC format
+- ✅ **INV-004**: Include close price (positive float)
+- ✅ **INV-005**: Include source field (`yfinance`, `fmp`, or `manual`)
+- ✅ **INV-006**: Respect 1000 quotes/batch limit (batch splitting)
+- ✅ **INV-007**: Send `Content-Type: application/json` header
+
+**Testing contract compliance**:
+```bash
+# Verify producer invariants
+pytest tests/test_storage_publisher.py::test_batch_invariants -v
+
+# Test payload validation
+pytest tests/test_storage_publisher.py::test_ticker_format_validation -v
+
+# Integration test (requires opa-quotes-api running)
+pytest tests/integration/test_end_to_end_flow.py -v
+```
+
+**Example valid payload sent**:
+```json
+{
+  "quotes": [
+    {
+      "ticker": "AAPL",
+      "timestamp": "2026-01-13T04:00:00Z",
+      "close": 175.23,
+      "open": 174.50,
+      "high": 176.00,
+      "low": 174.20,
+      "volume": 52341000,
+      "source": "yfinance"
+    }
+  ]
+}
+```
+
+**Pre-send validation logic**:
+```python
+# src/opa_quotes_streamer/publishers/storage_publisher.py
+def validate_quote_batch(quotes: List[Quote]) -> None:
+    """Validate batch before sending (INV-001 to INV-007)"""
+    
+    # INV-001: Non-empty array
+    if not quotes or len(quotes) == 0:
+        raise ValueError("Quotes array cannot be empty")
+    
+    # INV-006: Max 1000 quotes/batch
+    if len(quotes) > 1000:
+        raise ValueError(f"Batch too large: {len(quotes)} > 1000")
+    
+    for quote in quotes:
+        # INV-002: Ticker format
+        if not re.match(r'^[A-Z]{1,5}$', quote.ticker):
+            raise ValueError(f"Invalid ticker format: {quote.ticker}")
+        
+        # INV-003: ISO 8601 UTC
+        if quote.timestamp.tzinfo != timezone.utc:
+            raise ValueError(f"Timestamp must be UTC: {quote.timestamp}")
+        
+        # INV-004: Positive close
+        if quote.close <= 0:
+            raise ValueError(f"Close price must be positive: {quote.close}")
+        
+        # INV-005: Valid source
+        if quote.source not in ["yfinance", "fmp", "manual"]:
+            raise ValueError(f"Invalid source: {quote.source}")
+```
+
+**Batch splitting for large datasets**:
+```python
+# If yfinance returns >1000 quotes, split into multiple batches
+MAX_BATCH_SIZE = 1000
+
+async def publish_large_batch(quotes: List[Quote]):
+    for i in range(0, len(quotes), MAX_BATCH_SIZE):
+        batch = quotes[i:i + MAX_BATCH_SIZE]
+        await storage_publisher.publish_batch(batch)  # Respects INV-006
+```
+
+#### Other Contracts
+
+Ver contrato de datos: [`docs/contracts/data-models/quotes.md`](../OPA_Machine/docs/contracts/data-models/quotes.md) en repositorio supervisor.
 
 **Schema Quote**:
 
