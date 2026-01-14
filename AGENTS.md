@@ -209,6 +209,105 @@ Antes de marcar una issue como Done:
 - ✅ Añadir criterios de aceptación faltantes (antes de empezar trabajo)
 - ❌ NUNCA para reportar progreso, errores o reactivaciones
 
+## ⚠️ Validación Pre-cierre de Issue (CRÍTICO)
+
+**REGLA DE ORO**: Si un archivo NO está en GitHub en rama `main`, la issue NO está "Done".
+
+### Checklist OBLIGATORIO antes de mover issue a "Done"
+
+```bash
+# 0. LEER COMENTARIOS DE LA ISSUE (PRIMERO)
+# - Revisar TODOS los comentarios (especialmente los más recientes)
+# - Verificar que no hay instrucciones contradictorias
+
+# 1. Verificar estado de git
+git status  # Debe estar limpio
+
+# 2. Confirmar que archivos mencionados en la issue EXISTEN
+ls ruta/al/archivo-nuevo.md
+
+# 3. Commitear con mensaje correcto
+git add [archivos]
+git commit -m "OPA-XXX: Descripción clara"
+
+# 4. Pushear a GitHub
+git push origin main
+# O si trabajas en rama:
+git push origin <nombre-rama>
+
+# 5. VERIFICAR en GitHub web que commit aparece
+
+# 6. Si trabajaste en rama feature: MERGEAR a main
+git checkout main
+git pull origin main
+git merge --squash <nombre-rama>
+git commit -m "OPA-XXX: Descripción completa"
+git push origin main
+
+# 7. Eliminar branch (local + remota)
+git branch -d <nombre-rama>
+git push origin --delete <nombre-rama> 2>/dev/null || true
+
+# 8. Solo ENTONCES: Mover issue a "Done" en Linear
+```
+
+### Template de Comentario Final
+
+TODO cierre de issue DEBE incluir comentario con este formato:
+
+```markdown
+## ✅ Resolución
+
+🤖 **Agente opa-quotes-streamer**
+
+**Pre-checks**:
+- [x] Leídos TODOS los comentarios de la issue
+- [x] Verificadas dependencias mencionadas (si hay)
+
+**Cambios realizados**:
+- [x] Archivo X creado/modificado
+- [x] Archivo Y actualizado
+
+**Commits**:
+- Hash: abc1234
+- Mensaje: "OPA-XXX: Descripción"
+- Link: https://github.com/Ocaxtar/opa-quotes-streamer/commit/abc1234
+
+**Verificación**:
+- [x] Archivos confirmados en `git status`
+- [x] Commit pusheado a GitHub
+- [x] Rama mergeada a `main`
+- [x] Archivos visibles en GitHub web en rama `main`
+
+**Tests** (si aplica):
+- [x] pytest pasado (X/Y tests)
+- [x] Linter sin errores
+
+Issue cerrada.
+```
+
+### Errores Comunes que Causan Pérdida de Trabajo
+
+| Error | Consecuencia | Solución |
+|-------|--------------|----------|
+| ❌ Cerrar issue sin verificar archivos en `main` | Trabajo perdido en rama sin mergear | Siempre verificar en GitHub web |
+| ❌ Pushear a rama pero NO mergear a main | Código no desplegable | Siempre mergear rama a `main` |
+| ❌ Commitear pero NO pushear | Archivos solo en local | `git push` SIEMPRE antes de cerrar |
+| ❌ Asumir que archivos están commiteados | Archivos solo en working directory | `git status` debe estar limpio |
+| ❌ Cerrar issue sin comentario final | Sin trazabilidad | Template SIEMPRE |
+
+### Prefijo Obligatorio en Comentarios
+
+**TODO comentario en Linear DEBE tener prefijo**:
+
+```
+🤖 Agente opa-quotes-streamer: [tu mensaje]
+```
+
+**Violaciones detectadas por auditoría supervisor**:
+- Issue sin comentario → REABIERTA
+- Comentario sin prefijo → Backfill correctivo
+
 ## Contacto y Escalación
 
 **Para decisiones de arquitectura**: Crear issue con label `architecture` en supervisor  
@@ -219,4 +318,4 @@ Antes de marcar una issue como Done:
 
 📝 **Este documento debe mantenerse sincronizado con el supervisor**
 
-**Última sincronización con supervisor**: 2026-01-13
+**Última sincronización con supervisor**: 2026-01-14
