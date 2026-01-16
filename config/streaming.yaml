@@ -1,0 +1,146 @@
+# OPA Quotes Streamer - Configuración Streaming 100 Tickers
+# Issue: OPA-265
+# Fecha: 2026-01-16
+
+sources:
+  yahoo_finance:
+    tickers:
+      # Technology (25)
+      - AAPL
+      - MSFT
+      - GOOGL
+      - GOOG
+      - AMZN
+      - META
+      - NVDA
+      - TSLA
+      - AVGO
+      - ORCL
+      - CSCO
+      - ADBE
+      - CRM
+      - INTC
+      - AMD
+      - QCOM
+      - TXN
+      - IBM
+      - INTU
+      - NOW
+      - AMAT
+      - LRCX
+      - KLAC
+      - SNPS
+      - CDNS
+      # Financials (20)
+      - JPM
+      - BAC
+      - WFC
+      - GS
+      - MS
+      - C
+      - BLK
+      - SCHW
+      - AXP
+      - SPGI
+      - BX
+      - USB
+      - PNC
+      - TFC
+      - COF
+      - CME
+      - ICE
+      - MCO
+      - AIG
+      - MET
+      # Healthcare (15)
+      - UNH
+      - JNJ
+      - LLY
+      - ABBV
+      - MRK
+      - TMO
+      - ABT
+      - PFE
+      - DHR
+      - BMY
+      - AMGN
+      - GILD
+      - CVS
+      - CI
+      - ISRG
+      # Consumer Discretionary (10)
+      - HD
+      - MCD
+      - NKE
+      - SBUX
+      - LOW
+      - TJX
+      - BKNG
+      - GM
+      # Consumer Staples (8)
+      - WMT
+      - PG
+      - KO
+      - PEP
+      - COST
+      - PM
+      - MO
+      - CL
+      # Energy (6)
+      - XOM
+      - CVX
+      - COP
+      - SLB
+      - EOG
+      - PSX
+      # Industrials (8)
+      - BA
+      - CAT
+      - UNP
+      - HON
+      - UPS
+      - RTX
+      - LMT
+      - DE
+      # Communication Services (4)
+      - DIS
+      - CMCSA
+      # Utilities (2)
+      - NEE
+      - DUK
+      # Real Estate (2)
+      - PLD
+      - AMT
+      # Additional Healthcare
+      - VRTX
+      - REGN
+      - BIIB
+      - MRNA
+    
+    # Configuration
+    fetch_interval: 60  # Fetch every 60 seconds
+    batch_size: 10      # Process 10 tickers at a time
+    timeout: 5          # Timeout for each request (seconds)
+    retries: 3          # Number of retries on failure
+    
+publishers:
+  storage:
+    enabled: true
+    endpoint: "http://localhost:5001/api/v1/quotes"
+    batch_size: 50
+    timeout: 10
+
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/streaming.log"
+  
+metrics:
+  enabled: true
+  port: 9090
+  path: "/metrics"
+
+# Runtime settings for validation run
+validation:
+  duration: 3600  # Run for 1 hour (3600 seconds)
+  report_interval: 300  # Report metrics every 5 minutes
