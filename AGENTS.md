@@ -1,194 +1,109 @@
-# AGENTS.md - Guía para Agentes de IA
+# AGENTS.md - Guía para Agentes de IA (opa-quotes-streamer)
 
-> 🎯 **Guía operativa para el repositorio opa-quotes-streamer**  
-> Consultar guías del supervisor para contexto global del ecosistema
+## Identidad y Misión
 
-## Información del Repositorio
+**Nombre**: Agente de Streaming de Cotizaciones (Módulo 5)
+**Workspace**: `opa-quotes-streamer`
+**Repositorio**: `opa-quotes-streamer`
+**Rol**: Ingesta en tiempo real de cotizaciones desde múltiples fuentes (Yahoo Finance, Alpha Vantage)
+**Stack**: Rust 1.75+, Tokio, WebSockets, PostgreSQL client
 
-**Nombre**: opa-quotes-streamer  
-**Módulo**: Cotización (Módulo 5)  
-**Rol**: Streaming de cotizaciones en tiempo real  
-**Equipo Linear**: OPA  
-**Label Linear**: `opa-quotes-streamer`  
-**Supervisor**: [OPA_Machine](https://github.com/Ocaxtar/OPA_Machine)
+### Objetivo Principal
+Implementar y operar pipelines de streaming de alta frecuencia (1000+ tickers, <50ms latency) con circuit breakers, backpressure y recovery automático. Este servicio alimenta a `opa-quotes-storage` con datos en tiempo real.
 
-## 📚 Guías Especializadas (CONSULTAR PRIMERO)
+### Documentación Base (Lectura Obligatoria)
+1. **[ECOSYSTEM_CONTEXT.md](docs/ECOSYSTEM_CONTEXT.md)**: Posición en arquitectura global
+2. **[DEVELOPMENT.md](docs/DEVELOPMENT.md)**: Setup técnico, testing y estándares
+3. **[ROADMAP.md](ROADMAP.md)**: Objetivos Fase 1 (Cotización 40%)
 
-**Importante**: Antes de trabajar en este repositorio, consulta las guías centralizadas del supervisor.
+### Principios de Operación
+1. **Respeto Absoluto a los Contratos**: Consultar `docs/contracts/events/quotes-stream.md`
+2. **Resiliencia**: Circuit breakers ante fallos de fuentes externas
+3. **Performance**: Procesamiento asíncrono con Tokio, sin bloqueos
+4. **Etiquetado Estricto**: Solo trabajar en issues con label `opa-quotes-streamer`
 
-| Guía | Propósito | Cuándo consultar |
-|------|-----------|------------------|
-| **[workflow-git-linear.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/guides/workflow-git-linear.md)** | Workflow Git+Linear completo | Al trabajar en issues (branch, commit, merge, cierre) |
-| **[multi-workspace-guide.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/guides/multi-workspace-guide.md)** | Arquitectura 20 repos, coordinación | Al crear issues cross-repo, entender labels Linear |
-| **[code-conventions.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/guides/code-conventions.md)** | Estándares código, testing, CI/CD | Al escribir código, configurar tests, Docker |
-| **[technology-stack.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/guides/technology-stack.md)** | Stack tecnológico consolidado | Al elegir librerías, evaluar rendimiento |
-| **[linear-mcp-quickstart.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/guides/linear-mcp-quickstart.md)** | Errores comunes Linear MCP | Al usar mcp_linear tools (errores, fixes) |
+---
+
+## 📚 Agent Skills (CONSULTAR PRIMERO)
+
+Este repositorio incluye skills especializados para guiar el trabajo:
+
+| Skill | Propósito | Cuándo consultar |
+|-------|-----------|------------------|
+| **[git-linear-workflow](.github/skills/git-linear-workflow/SKILL.md)** | Workflow Git+Linear completo | Al trabajar en issues (branch, commit, merge, cierre) |
+| **[linear-mcp-tool](.github/skills/linear-mcp-tool/SKILL.md)** | Errores comunes Linear MCP | Al usar mcp_linear tools (errores, fixes) |
+| **[run-efficiency](.github/skills/run-efficiency/SKILL.md)** | Gestión tokens, pre-Done checklist | En tareas complejas, antes de marcar Done |
+
+**Guías de referencia** (supervisor):
+- **[code-conventions.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/guides/code-conventions.md)**: Estándares código, testing, CI/CD
+- **[technology-stack.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/guides/technology-stack.md)**: Stack tecnológico consolidado
 
 **Convención idiomática**:
 - **Código y nombres técnicos** (clases, funciones, commits): **Inglés**
 - **Interacción con usuarios** (comentarios Linear, PRs, docs narrativa): **Español**
 
-## Contexto del Servicio
+> **Sincronizado desde**: OPA_Machine supervisor (OPA-264)
 
-Este servicio es responsable de:
-1. **Conexión a APIs de mercado** (Yahoo Finance, Alpha Vantage)
-2. **Streaming de cotizaciones** en tiempo real
-3. **Publicación de eventos** para consumo por otros servicios
-4. **Gestión de reconexión** y circuit breaker
+---
 
-### Posición en el Ecosistema
+## 🔧 Gestión de Tools MCP (Linear, GitHub)
 
+**REGLA CRÍTICA**: Muchas tools de Linear/GitHub requieren activación explícita antes de uso.
+
+### Workflow de Activación
+
+Si intentas usar una tool y fallas con:
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    OPA_Machine (Supervisor)                     │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-        ┌─────────────────┼─────────────────┐
-        │                 │                 │
-        ▼                 ▼                 ▼
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│ quotes-api   │  │ quotes-      │  │ quotes-      │
-│              │◄─┤ streamer ◄───┤──┤ storage      │
-│              │  │ (ESTE REPO)  │  │              │
-└──────────────┘  └──────────────┘  └──────────────┘
+Tool mcp_linear_create_issue is currently disabled by the user, and cannot be called.
+ERROR: Tool not found or not activated
 ```
 
-### Dependencias
+**NO continúes sin la tool**. Debes:
+1. ✅ Activar el grupo de tools correspondiente
+2. ✅ Reintentar la operación original
+3. ❌ NUNCA saltar el paso o usar alternativa
 
-| Servicio | Tipo | Propósito |
-|----------|------|-----------|
-| `opa-quotes-storage` | Downstream | Persistencia de cotizaciones |
-| `opa-quotes-api` | Downstream | Consulta de cotizaciones históricas |
-| Redis | Infraestructura | Pub/Sub para eventos |
+**Ejemplo**:
+```markdown
+# Detectar fallo
+Tool mcp_linear_create_comment failed: currently disabled
 
-## Stack Tecnológico
+# 1. Activar grupo
+activate_issue_management_tools()
 
-| Componente | Tecnología | Versión |
-|------------|------------|---------|
-| Lenguaje | Rust | 1.75+ |
-| Runtime async | Tokio | Latest |
-| HTTP Client | reqwest | Latest |
-| Serialización | serde | Latest |
-| WebSocket | tokio-tungstenite | Latest |
-
-## Estructura del Proyecto
-
+# 2. Reintentar operación EXACTA
+mcp_linear_create_comment(issueId="OPA-XXX", body="...")
 ```
-opa-quotes-streamer/
-├── src/
-│   ├── main.rs           # Entry point
-│   ├── config/           # Configuración
-│   ├── connectors/       # Conectores a APIs externas
-│   ├── events/           # Definición de eventos
-│   └── streaming/        # Lógica de streaming
-├── tests/
-│   ├── integration/      # Tests de integración
-│   └── unit/             # Tests unitarios
-├── Cargo.toml
-├── Dockerfile
-└── docker-compose.yml
-```
-
-## Convenciones de Desarrollo
-
-### Commits
-
-Formato: `<tipo>(<scope>): <descripción> (OPA-XXX)`
-
-Tipos permitidos:
-- `feat`: Nueva funcionalidad
-- `fix`: Corrección de bug
-- `docs`: Documentación
-- `refactor`: Refactorización
-- `test`: Tests
-- `chore`: Mantenimiento
-
-Ejemplo: `feat(connectors): Add Alpha Vantage connector (OPA-123)`
-
-### Branches
-
-Patrón: `username/opa-xxx-descripcion`
-
-Ejemplo: `ocaxtar/opa-123-alpha-vantage-connector`
-
-### Testing
-
-```bash
-# Tests unitarios
-cargo test
-
-# Tests de integración
-cargo test --test integration
-
-# Con coverage
-cargo tarpaulin --out Html
-```
-
-## Contratos
-
-### Eventos Publicados
-
-| Evento | Canal Redis | Schema |
-|--------|-------------|--------|
-| `QuoteReceived` | `quotes:realtime` | Ver `docs/contracts/events/quote-received.md` |
-| `StreamError` | `quotes:errors` | Ver `docs/contracts/events/stream-error.md` |
-
-### APIs Consumidas
-
-| API | Propósito | Documentación |
-|-----|-----------|---------------|
-| Yahoo Finance | Cotizaciones realtime | [yfinance docs](https://pypi.org/project/yfinance/) |
-| Alpha Vantage | Cotizaciones premium | [alphavantage.co](https://www.alphavantage.co/documentation/) |
-
-## Comandos Útiles
-
-```bash
-# Desarrollo
-cargo build
-cargo run
-
-# Producción
-cargo build --release
-
-# Docker
-docker-compose up -d
-
-# Logs
-docker-compose logs -f streamer
-```
-
-## 🔧 Gestión de Tools MCP
 
 ### Tools que Requieren Activación
 
 | Grupo | Tool de Activación | Cuándo Usar |
 |-------|-------------------|-------------|
-| **Issues Linear** | `activate_issue_management_tools()` | Crear/actualizar issues |
-| **Repos GitHub** | `activate_repository_management_tools()` | Branches, PRs |
-| **Search** | `activate_search_and_discovery_tools()` | Buscar código |
+| Linear Issues | `activate_issue_management_tools()` | Crear/actualizar issues, labels |
+| Linear Docs | `activate_document_management_tools()` | Crear/actualizar documentos |
+| GitHub PRs | `activate_pull_request_review_tools()` | Crear/revisar PRs |
+| GitHub Repos | `activate_repository_management_tools()` | Crear repos, branches |
 
-### Patrón de Uso
+**Ver**: `OPA_Machine/AGENTS.md` sección "Gestión de Tools MCP" para tabla completa.
 
-```markdown
-# Si tool falla con "disabled":
-1. Activar grupo correspondiente
-2. Reintentar operación
-3. NUNCA saltar el paso
-```
+---
 
-## 🛡️ Pre-Issue Close Checklist
+## 🛡️ Validación de Convenciones
 
-Antes de marcar una issue como Done:
+**REGLA CRÍTICA**: Antes de ejecutar acciones que modifican estado, validar convenciones.
 
-- [ ] Tests ejecutados y pasando (`cargo test`)
-- [ ] Código formateado (`cargo fmt`)
-- [ ] Linting sin errores (`cargo clippy`)
-- [ ] Documentación actualizada si aplica
-- [ ] PR mergeado a main
+### Convenciones Obligatorias
 
-## 📝 Comentarios vs Descripción en Issues
+1. **Commits**: DEBEN incluir referencia a issue (`OPA-XXX`)
+2. **Issues**: DEBEN crearse en Linear ANTES de implementar
+3. **Branches**: DEBEN seguir patrón `username/opa-xxx-descripcion`
+4. **Tests**: DEBEN ejecutarse antes de marcar Done
+
+### 📝 Regla Crítica: Comentarios vs Descripción en Issues
 
 **PRINCIPIO**: La **descripción** de una issue es la **especificación inicial**. Los **comentarios** son el **registro de progreso**.
+
+**Comportamiento requerido**:
 
 | Acción | Tool Correcta | Tool Incorrecta |
 |--------|---------------|-----------------|
@@ -198,7 +113,7 @@ Antes de marcar una issue como Done:
 | Añadir diagnóstico | `mcp_linear_create_comment()` | ❌ Modificar descripción |
 | Cerrar con resumen | `mcp_linear_create_comment()` + `update_issue(state="Done")` | ❌ Solo cambiar estado |
 
-**Rationale**:
+**¿Por qué?**:
 - **Trazabilidad**: Comentarios tienen timestamps automáticos → historial auditable
 - **Notificaciones**: Comentarios notifican a watchers → mejor colaboración
 - **Reversibilidad**: Descripción original preservada → contexto no se pierde
@@ -207,7 +122,29 @@ Antes de marcar una issue como Done:
 **¿Cuándo SÍ modificar descripción?**:
 - ✅ Corregir typos en la especificación original
 - ✅ Añadir criterios de aceptación faltantes (antes de empezar trabajo)
+- ✅ Actualizar estimación inicial
 - ❌ NUNCA para reportar progreso, errores o reactivaciones
+
+### Checkpoint Pre-Acción
+
+Si detectas violación, **DETENER** y devolver control al usuario:
+
+```markdown
+⚠️ **Acción Bloqueada - Violación de Convención**
+
+**Acción planeada**: `git commit -m "Fix bug"`
+**Violación**: Commit sin referencia a issue (OPA-XXX)
+
+**Opciones**:
+1. Crear issue en Linear primero → Usar OPA-XXX en commit
+2. Si issue existe → Añadir referencia al mensaje
+
+¿Cómo deseas proceder?
+```
+
+**El agente debe esperar respuesta del usuario antes de continuar.**
+
+---
 
 ## ⚠️ Validación Pre-cierre de Issue (CRÍTICO)
 
@@ -308,14 +245,7 @@ Issue cerrada.
 - Issue sin comentario → REABIERTA
 - Comentario sin prefijo → Backfill correctivo
 
-## Contacto y Escalación
-
-**Para decisiones de arquitectura**: Crear issue con label `architecture` en supervisor  
-**Para bugs críticos**: Usar label `urgent` + `P0` en Linear  
-**Supervisor**: [OPA_Machine](https://github.com/Ocaxtar/OPA_Machine)
-
 ---
 
-📝 **Este documento debe mantenerse sincronizado con el supervisor**
-
-**Última sincronización con supervisor**: 2026-01-14
+**Última sincronización con supervisor**: 2026-01-16
+**Versión normativa**: 2.0.0 (Agent Skills)
