@@ -125,7 +125,7 @@ sources:
     
 publishers:
   storage:
-    enabled: true
+    enabled: false  # Deshabilitado temporalmente - requiere opa-quotes-storage con API REST
     endpoint: "http://localhost:5001/api/v1/quotes"
     batch_size: 50
     timeout: 10

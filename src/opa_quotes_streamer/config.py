@@ -63,6 +63,10 @@ class Settings(BaseSettings):
         ge=1,
         description="Storage request timeout (seconds)"
     )
+    publisher_enabled: bool = Field(
+        default=True,
+        description="Enable/disable storage publisher"
+    )
     
     # Circuit breaker
     circuit_breaker_threshold: int = Field(

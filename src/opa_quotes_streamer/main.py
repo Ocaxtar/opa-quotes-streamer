@@ -78,7 +78,6 @@ class StreamingService:
             self.metrics.record_error("critical")
             try:
                 self.pipeline_logger.complete(
-                    status="failed",
                     output_records=self.total_quotes_published,
                     metadata={"error": str(e), "cycles": self.cycle_count}
                 )
@@ -104,27 +103,30 @@ class StreamingService:
                     self.metrics.record_fetch(len(quotes), fetch_duration)
                     logger.info(f"Fetched {len(quotes)} quotes in {fetch_duration:.2f}s")
                     
-                    # Publish to storage
-                    publish_start = time.time()
-                    try:
-                        inserted = await self.publisher.publish_batch(quotes)
-                        publish_duration = time.time() - publish_start
-                        
-                        self.total_quotes_published += inserted
-                        self.metrics.record_publish(inserted, publish_duration)
-                        logger.info(f"Published {inserted} quotes in {publish_duration:.2f}s")
-                        
-                        # Update circuit breaker state metric
-                        cb_state = self.publisher.get_circuit_state()
-                        self.metrics.set_circuit_breaker_state("storage", cb_state)
-                        
-                    except PublisherError as e:
-                        logger.warning(f"Publisher error: {e}")
-                        self.metrics.record_error("publish")
-                        
-                        # Update circuit breaker state even on error
-                        cb_state = self.publisher.get_circuit_state()
-                        self.metrics.set_circuit_breaker_state("storage", cb_state)
+                    # Publish to storage (if enabled)
+                    if settings.publisher_enabled:
+                        publish_start = time.time()
+                        try:
+                            inserted = await self.publisher.publish_batch(quotes)
+                            publish_duration = time.time() - publish_start
+                            
+                            self.total_quotes_published += inserted
+                            self.metrics.record_publish(inserted, publish_duration)
+                            logger.info(f"Published {inserted} quotes in {publish_duration:.2f}s")
+                            
+                            # Update circuit breaker state metric
+                            cb_state = self.publisher.get_circuit_state()
+                            self.metrics.set_circuit_breaker_state("storage", cb_state)
+                            
+                        except PublisherError as e:
+                            logger.warning(f"Publisher error: {e}")
+                            self.metrics.record_error("publish")
+                            
+                            # Update circuit breaker state even on error
+                            cb_state = self.publisher.get_circuit_state()
+                            self.metrics.set_circuit_breaker_state("storage", cb_state)
+                    else:
+                        logger.debug("Publisher disabled, skipping publish")
                 else:
                     logger.debug("No quotes fetched this cycle")
                 
@@ -154,7 +156,6 @@ class StreamingService:
         # Finalize
         try:
             self.pipeline_logger.complete(
-                status="success",
                 output_records=self.total_quotes_published,
                 metadata={
                     "cycles": self.cycle_count,

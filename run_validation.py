@@ -13,10 +13,9 @@ import yaml
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# Add src to Python path
+# Add src to Python path BUT DO NOT import StreamingService yet
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from opa_quotes_streamer.main import StreamingService
 import logging
 
 # Setup logging
@@ -64,6 +63,9 @@ class ValidationRunner:
             pub_config = self.config['publishers']['storage']
             os.environ['STORAGE_API_URL'] = pub_config['endpoint']
             os.environ['STORAGE_TIMEOUT'] = str(pub_config['timeout'])
+            os.environ['PUBLISHER_ENABLED'] = str(pub_config.get('enabled', True)).lower()
+        else:
+            os.environ['PUBLISHER_ENABLED'] = 'false'
         
         # Metrics
         if 'metrics' in self.config:
@@ -77,6 +79,7 @@ class ValidationRunner:
         
         logger.info(f"Configurados {len(source_config['tickers'])} tickers")
         logger.info(f"Intervalo de polling: {source_config['fetch_interval']}s")
+        logger.info(f"Publisher enabled: {os.environ.get('PUBLISHER_ENABLED', 'true')}")
     
     async def run_validation(self, duration_seconds: int):
         """
@@ -92,10 +95,13 @@ class ValidationRunner:
         self.start_time = datetime.now()
         end_time = self.start_time + timedelta(seconds=duration_seconds)
         
-        # Set environment
+        # Set environment BEFORE importing StreamingService
         self._set_environment()
         
-        # Create service
+        # NOW import after env vars are set
+        from opa_quotes_streamer.main import StreamingService
+        
+        # Create service (will load fresh settings with env vars)
         self.service = StreamingService()
         
         # Create task with timeout
