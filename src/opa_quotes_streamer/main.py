@@ -57,7 +57,7 @@ class StreamingService:
         """Start streaming service."""
         try:
             self.pipeline_logger.start(triggered_by="streamer-init")
-        except OperationalError as e:
+        except (OperationalError, UnicodeDecodeError) as e:
             logger.warning(f"PipelineLogger DB unavailable, using stdout logging: {e}")
             logger.info("Pipeline started without DB tracking (fallback mode)")
         
@@ -82,7 +82,7 @@ class StreamingService:
                     output_records=self.total_quotes_published,
                     metadata={"error": str(e), "cycles": self.cycle_count}
                 )
-            except OperationalError:
+            except (OperationalError, UnicodeDecodeError):
                 logger.warning("Could not log pipeline completion to DB (DB unavailable)")
             raise
     
@@ -162,7 +162,7 @@ class StreamingService:
                     "quotes_published": self.total_quotes_published
                 }
             )
-        except OperationalError:
+        except (OperationalError, UnicodeDecodeError):
             logger.warning("Could not log pipeline completion to DB (DB unavailable)")
         
         logger.info(f"Stream loop exited after {self.cycle_count} cycles")
