@@ -1,0 +1,361 @@
+# OPA Quotes Streamer - Configuración Benchmark 300 Tickers
+# Issue: OPA-286
+# Fecha: 2026-01-20
+# Propósito: Validar escalabilidad Python antes de decisión Rust
+
+sources:
+  yahoo_finance:
+    tickers:
+      # Technology (50)
+      - AAPL
+      - MSFT
+      - GOOGL
+      - GOOG
+      - AMZN
+      - META
+      - NVDA
+      - TSLA
+      - AVGO
+      - ORCL
+      - CSCO
+      - ADBE
+      - CRM
+      - INTC
+      - AMD
+      - QCOM
+      - TXN
+      - IBM
+      - INTU
+      - NOW
+      - AMAT
+      - LRCX
+      - KLAC
+      - SNPS
+      - CDNS
+      - MU
+      - ADI
+      - MCHP
+      - FTNT
+      - PANW
+      - NXPI
+      - MPWR
+      - KEYS
+      - ANSS
+      - SWKS
+      - CTSH
+      - IT
+      - HPQ
+      - HPE
+      - DELL
+      - NTAP
+      - JNPR
+      - WDC
+      - STX
+      - FFIV
+      - AKAM
+      - ZBRA
+      - GEN
+      - EPAM
+      - ENPH
+      
+      # Financials (45)
+      - JPM
+      - BAC
+      - WFC
+      - GS
+      - MS
+      - C
+      - BLK
+      - SCHW
+      - AXP
+      - SPGI
+      - BX
+      - USB
+      - PNC
+      - TFC
+      - COF
+      - CME
+      - ICE
+      - MCO
+      - AIG
+      - MET
+      - PRU
+      - AFL
+      - TRV
+      - CB
+      - ALL
+      - PGR
+      - HIG
+      - AJG
+      - MMC
+      - AON
+      - MSCI
+      - FIS
+      - FISV
+      - GPN
+      - PYPL
+      - V
+      - MA
+      - AMP
+      - RJF
+      - NTRS
+      - STT
+      - BK
+      - CFG
+      - RF
+      - FITB
+      
+      # Healthcare (45)
+      - UNH
+      - JNJ
+      - LLY
+      - ABBV
+      - MRK
+      - TMO
+      - ABT
+      - PFE
+      - DHR
+      - BMY
+      - AMGN
+      - GILD
+      - CVS
+      - CI
+      - ISRG
+      - VRTX
+      - REGN
+      - BIIB
+      - MRNA
+      - MDT
+      - SYK
+      - BSX
+      - ZBH
+      - EW
+      - BDX
+      - DXCM
+      - IDXX
+      - IQV
+      - A
+      - MTD
+      - WAT
+      - HOLX
+      - ALGN
+      - TECH
+      - RVTY
+      - CRL
+      - DGX
+      - LH
+      - HCA
+      - ELV
+      - CNC
+      - MOH
+      - HUM
+      - MCK
+      - CAH
+      
+      # Consumer Discretionary (35)
+      - HD
+      - MCD
+      - NKE
+      - SBUX
+      - LOW
+      - TJX
+      - BKNG
+      - GM
+      - F
+      - TGT
+      - ROST
+      - CMG
+      - DHI
+      - LEN
+      - PHM
+      - NVR
+      - ORLY
+      - AZO
+      - BBY
+      - DRI
+      - MAR
+      - HLT
+      - WYNN
+      - LVS
+      - MGM
+      - RCL
+      - CCL
+      - EXPE
+      - ABNB
+      - UBER
+      - LYFT
+      - DPZ
+      - YUM
+      - QSR
+      - DARDEN
+      
+      # Consumer Staples (25)
+      - WMT
+      - PG
+      - KO
+      - PEP
+      - COST
+      - PM
+      - MO
+      - CL
+      - EL
+      - KMB
+      - MDLZ
+      - GIS
+      - K
+      - HSY
+      - CPB
+      - SJM
+      - CAG
+      - HRL
+      - TSN
+      - KHC
+      - TAP
+      - STZ
+      - BF.B
+      - ADM
+      - BG
+      
+      # Energy (25)
+      - XOM
+      - CVX
+      - COP
+      - SLB
+      - EOG
+      - PSX
+      - MPC
+      - VLO
+      - OXY
+      - PXD
+      - DVN
+      - FANG
+      - HES
+      - HAL
+      - BKR
+      - KMI
+      - WMB
+      - OKE
+      - ET
+      - TRGP
+      - LNG
+      - MRO
+      - APA
+      - CTRA
+      - EQT
+      
+      # Industrials (40)
+      - BA
+      - CAT
+      - UNP
+      - HON
+      - UPS
+      - RTX
+      - LMT
+      - DE
+      - GE
+      - MMM
+      - EMR
+      - ITW
+      - ETN
+      - PH
+      - ROK
+      - CMI
+      - PCAR
+      - FAST
+      - GWW
+      - SWK
+      - IR
+      - DOV
+      - XYL
+      - NDSN
+      - IEX
+      - AME
+      - ROP
+      - TT
+      - CARR
+      - OTIS
+      - TDG
+      - HWM
+      - TXT
+      - NOC
+      - GD
+      - LHX
+      - LDOS
+      - J
+      - FDX
+      - CSX
+      
+      # Communication Services (15)
+      - DIS
+      - CMCSA
+      - NFLX
+      - T
+      - VZ
+      - TMUS
+      - CHTR
+      - EA
+      - TTWO
+      - WBD
+      - FOXA
+      - FOX
+      - OMC
+      - IPG
+      - PARA
+      
+      # Utilities (10)
+      - NEE
+      - DUK
+      - SO
+      - D
+      - AEP
+      - SRE
+      - EXC
+      - XEL
+      - ED
+      - PEG
+      
+      # Real Estate (10)
+      - PLD
+      - AMT
+      - CCI
+      - EQIX
+      - PSA
+      - SPG
+      - O
+      - WELL
+      - DLR
+      - AVB
+    
+    # Configuration optimizada para 300 tickers
+    fetch_interval: 60    # Fetch every 60 seconds
+    batch_size: 30        # 30 tickers per batch (10 batches total)
+    timeout: 10           # Timeout aumentado para mayor volumen
+    retries: 3            # Retries on failure
+    
+publishers:
+  storage:
+    enabled: false  # Deshabilitado para benchmark - solo medir fetch
+    endpoint: "http://localhost:5001/api/v1/quotes"
+    batch_size: 100
+    timeout: 15
+
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/benchmark-300.log"
+  
+metrics:
+  enabled: true
+  port: 9090
+  path: "/metrics"
+
+# Benchmark settings (OPA-286)
+benchmark:
+  duration: 7200         # 2 horas (target)
+  report_interval: 300   # Report cada 5 minutos
+  
+  # Targets para evaluación
+  targets:
+    latency_p99_ms: 200
+    error_rate_percent: 1.0
+    gaps_max: 5

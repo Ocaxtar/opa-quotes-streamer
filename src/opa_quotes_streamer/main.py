@@ -78,11 +78,11 @@ class StreamingService:
             self.metrics.record_error("critical")
             try:
                 self.pipeline_logger.complete(
-                    output_records=self.total_quotes_published,
+                    records_written=self.total_quotes_published,
                     metadata={"error": str(e), "cycles": self.cycle_count}
                 )
-            except (OperationalError, UnicodeDecodeError):
-                logger.warning("Could not log pipeline completion to DB (DB unavailable)")
+            except (OperationalError, UnicodeDecodeError, TypeError) as log_error:
+                logger.warning(f"Could not log pipeline completion to DB: {log_error}")
             raise
     
     async def stream_loop(self):
@@ -156,15 +156,15 @@ class StreamingService:
         # Finalize
         try:
             self.pipeline_logger.complete(
-                output_records=self.total_quotes_published,
+                records_written=self.total_quotes_published,
                 metadata={
                     "cycles": self.cycle_count,
                     "quotes_fetched": self.total_quotes_fetched,
                     "quotes_published": self.total_quotes_published
                 }
             )
-        except (OperationalError, UnicodeDecodeError):
-            logger.warning("Could not log pipeline completion to DB (DB unavailable)")
+        except (OperationalError, UnicodeDecodeError, TypeError) as e:
+            logger.warning(f"Could not log pipeline completion to DB: {e}")
         
         logger.info(f"Stream loop exited after {self.cycle_count} cycles")
     
