@@ -68,6 +68,20 @@ class Settings(BaseSettings):
         description="Enable/disable storage publisher"
     )
     
+    # Redis Pub/Sub configuration
+    redis_url: str = Field(
+        default="redis://localhost:6381",
+        description="Redis connection URL for Pub/Sub"
+    )
+    redis_channel: str = Field(
+        default="quotes-stream",
+        description="Redis channel for quote events"
+    )
+    redis_publisher_enabled: bool = Field(
+        default=True,
+        description="Enable/disable Redis publisher"
+    )
+    
     # Circuit breaker
     circuit_breaker_threshold: int = Field(
         default=5,

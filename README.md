@@ -27,6 +27,10 @@ Real-time quote streaming service for OPA_Machine ecosystem (Módulo 5 - Cotizac
 ```
 yfinance API → opa-quotes-streamer → opa-quotes-storage (TimescaleDB)
                      ↓
+               Redis Pub/Sub (CloudEvents 1.0)
+                     ↓
+            opa-capacity-api, otros servicios
+                     ↓
             Métricas (Prometheus)
 ```
 
@@ -57,7 +61,8 @@ src/opa_quotes_streamer/
 │   └── yfinance_source.py   # YFinanceSource (Fase 1)
 ├── publishers/
 │   ├── base.py              # BasePublisher (interface)
-│   └── storage_publisher.py # TimescalePublisher (HTTP → storage)
+│   ├── storage_publisher.py # TimescalePublisher (HTTP → storage)
+│   └── redis_publisher.py   # RedisPublisher (CloudEvents → Redis Pub/Sub)
 ├── models/
 │   ├── quote.py             # Quote (Pydantic model)
 │   └── stream_event.py      # StreamEvent (lifecycle events)
@@ -120,6 +125,11 @@ POLLING_INTERVAL=60
 
 # opa-quotes-storage endpoint
 STORAGE_API_URL=http://localhost:8000
+
+# Redis Pub/Sub configuration (Fase 2)
+REDIS_URL=redis://localhost:6381
+REDIS_CHANNEL=quotes-stream
+REDIS_PUBLISHER_ENABLED=true
 
 # Rate limiting (aumentado para 300 tickers)
 MAX_REQUESTS_PER_HOUR=3000

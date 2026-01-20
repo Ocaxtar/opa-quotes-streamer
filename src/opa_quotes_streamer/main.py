@@ -11,6 +11,7 @@ from opa_quotes_streamer.config import get_settings
 from opa_quotes_streamer.logging_setup import setup_logging
 from opa_quotes_streamer.sources.yfinance_source import YFinanceSource
 from opa_quotes_streamer.publishers.storage_publisher import StoragePublisher, PublisherError
+from opa_quotes_streamer.publishers.redis_publisher import RedisPublisher
 from opa_quotes_streamer.metrics import StreamingMetrics
 from opa_shared_utils.utils.pipeline_logger import PipelineLogger
 from sqlalchemy.exc import OperationalError
@@ -45,6 +46,10 @@ class StreamingService:
             timeout=settings.storage_timeout,
             circuit_breaker_threshold=settings.circuit_breaker_threshold,
             circuit_breaker_timeout=settings.circuit_breaker_timeout
+        )
+        self.redis_publisher = RedisPublisher(
+            redis_url=settings.redis_url,
+            channel=settings.redis_channel
         )
         self.metrics = StreamingMetrics()
         
@@ -102,6 +107,23 @@ class StreamingService:
                     self.total_quotes_fetched += len(quotes)
                     self.metrics.record_fetch(len(quotes), fetch_duration)
                     logger.info(f"Fetched {len(quotes)} quotes in {fetch_duration:.2f}s")
+                    
+                    # Publish to Redis (if enabled)
+                    if settings.redis_publisher_enabled:
+                        redis_start = time.time()
+                        try:
+                            redis_published = await self.redis_publisher.publish_batch(quotes)
+                            redis_duration = time.time() - redis_start
+                            logger.info(f"Published {redis_published} quotes to Redis in {redis_duration:.2f}s")
+                            
+                            # Update circuit breaker state metric
+                            redis_cb_state = self.redis_publisher._circuit_breaker.state
+                            self.metrics.set_circuit_breaker_state("redis", redis_cb_state)
+                        except Exception as e:
+                            logger.warning(f"Redis publisher error: {e}")
+                            self.metrics.record_error("redis_publish")
+                            redis_cb_state = self.redis_publisher._circuit_breaker.state
+                            self.metrics.set_circuit_breaker_state("redis", redis_cb_state)
                     
                     # Publish to storage (if enabled)
                     if settings.publisher_enabled:
@@ -173,8 +195,9 @@ class StreamingService:
         logger.info("Stopping streaming service...")
         self.running = False
         
-        # Close publisher connection
+        # Close publisher connections
         await self.publisher.close()
+        await self.redis_publisher.close()
         
         logger.info("Streaming service stopped")
 
