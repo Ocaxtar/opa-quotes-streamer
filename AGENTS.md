@@ -24,6 +24,37 @@ Implementar y operar pipelines de streaming de alta frecuencia (1000+ tickers, <
 
 ---
 
+## 🚦 Pre-Flight Checklist (OBLIGATORIO)
+
+**Antes de cualquier operación, verificar**:
+
+| Acción | Documento/Skill | Cuándo |
+|--------|-----------------|--------|
+| 🔄 **Sincronizar workspace** | Script `scripts/git/check_sync.sh` | ⚠️ **INICIO DE CADA RUN** |
+| Operar Docker/conexiones | Ver OPA_Machine [service-inventory.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/infrastructure/service-inventory.md) | ⚠️ **SIEMPRE** antes de Docker |
+| Trabajar en issue | OPA_Machine skill `git-linear-workflow` | Antes de branch/commit |
+| Usar Linear MCP tools | Ver sección "Gestión de Tools MCP" ↓ | Si tool falla |
+
+### Sincronización Automática
+
+**Al inicio de cada run, ejecutar**:
+```bash
+bash scripts/git/check_sync.sh
+```
+
+**Exit codes**:
+- `0`: ✅ Sincronizado (continuar)
+- `2`: ⚠️ Commits locales sin push (avisar usuario)
+- `3`: ⚠️ Cambios remotos en código (avisar usuario)
+- `4`: ❌ Divergencia detectada (requerir resolución manual)
+- `5`: ⚠️ No se pudo conectar con remoto
+
+**Pull automático**: Si solo hay cambios en `docs/`, `AGENTS.md`, `.github/skills/`, `README.md`, `ROADMAP.md` → pull automático aplicado.
+
+**Ver detalles completos**: Consultar skill `workspace-sync` en OPA_Machine supervisor.
+
+---
+
 ## 📚 Agent Skills (CONSULTAR PRIMERO)
 
 Este repositorio incluye skills especializados para guiar el trabajo:
@@ -247,5 +278,5 @@ Issue cerrada.
 
 ---
 
-**Última sincronización con supervisor**: 2026-01-16
-**Versión normativa**: 2.0.0 (Agent Skills)
+**Última sincronización con supervisor**: 2026-01-20 (OPA-293)
+**Versión normativa**: 2.1.0 (Pre-Flight Checklist + workspace-sync)
