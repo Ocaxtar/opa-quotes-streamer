@@ -6,8 +6,9 @@
 
 Real-time quote streaming service for OPA_Machine ecosystem (Módulo 5 - Cotización).
 
-**Fase 1**: Python implementation with yfinance + WebSockets  
-**Fase 2**: Rust migration for ultra-low latency (planned)
+**Cobertura actual**: 300 tickers S&P 500 más líquidos  
+**Fase 1**: Python implementation with yfinance (polling 60s) ✅  
+**Fase 2**: Decisión: Continuar con Python (ADR-019)
 
 ## 📋 Descripción
 
@@ -111,17 +112,17 @@ cp .env.example .env
 ### Configuración (.env)
 
 ```bash
-# Tickers a monitorizar (separados por coma)
-TICKERS=AAPL,MSFT,GOOGL,AMZN,TSLA,META,NVDA,JPM,V,WMT
+# Tickers a monitorizar (ver config/streaming.yaml para lista completa de 300)
+TICKERS=AAPL,MSFT,GOOGL,AMZN,TSLA,META,NVDA,JPM,V,WMT,...
 
-# Intervalo de polling (segundos)
-POLLING_INTERVAL=5
+# Intervalo de polling (segundos) - optimizado para 300 tickers
+POLLING_INTERVAL=60
 
 # opa-quotes-storage endpoint
 STORAGE_API_URL=http://localhost:8000
 
-# Rate limiting
-MAX_REQUESTS_PER_HOUR=2000
+# Rate limiting (aumentado para 300 tickers)
+MAX_REQUESTS_PER_HOUR=3000
 
 # Logging
 LOG_LEVEL=INFO
@@ -140,9 +141,9 @@ python -m opa_quotes_streamer.main
 
 # Logs esperados:
 # INFO - Starting opa-quotes-streamer v0.1.0
-# INFO - Streaming 10 tickers: AAPL, MSFT, GOOGL...
-# INFO - Fetched 10 quotes in 1.2s
-# INFO - Published 10 quotes to storage
+# INFO - Streaming 300 tickers: AAPL, MSFT, GOOGL...
+# INFO - Fetched 289 quotes in 30.2s
+# INFO - Cycle 1 completed
 ```
 
 #### Docker Compose
@@ -463,25 +464,27 @@ docker-compose logs -f streamer | grep "yfinance"
 
 ## 📖 Roadmap
 
-### Fase 1: Python Implementation (Actual)
+### Fase 1: Python Implementation ✅
 
 - [x] Scaffolding completo
-- [ ] **OPA-194**: YFinanceSource (fetch quotes con rate limiting)
-- [ ] **OPA-195**: StoragePublisher (POST a opa-quotes-storage)
-- [ ] **OPA-196**: StreamingService con graceful shutdown
-- [ ] **OPA-197**: RateLimiter (token bucket) + CircuitBreaker
-- [ ] **OPA-198**: Tests unitarios + integración
-- [ ] **OPA-199**: Docker Compose + CI/CD
+- [x] YFinanceSource (fetch quotes con rate limiting)
+- [x] StoragePublisher (POST a opa-quotes-storage)
+- [x] StreamingService con graceful shutdown
+- [x] RateLimiter (token bucket) + CircuitBreaker
+- [x] Tests unitarios + integración
+- [x] Docker Compose + CI/CD
+- [x] **OPA-265**: Validación 100 tickers
+- [x] **OPA-286**: Benchmark 300 tickers
+- [x] **OPA-288**: Ampliar a 300 tickers S&P 500
 
-**Target**: 10-50 tickers, polling 5s, latencia total <2s
+**Resultado**: 300 tickers, polling 60s, latencia batch ~30-40s, memoria ~240MB
 
-### Fase 2: Rust Migration (Futuro)
+### Fase 2: Optimización (Decidido: Continuar Python)
 
-- [ ] Rust POC con Tokio + WebSocket
-- [ ] IEX Cloud integration (real-time)
-- [ ] Migración gradual (Python → Rust)
-- [ ] 1000+ tickers concurrentes
-- [ ] Sub-second latency (<100ms)
+- [x] **OPA-289**: ADR-019 Decisión Rust vs Python → **Python suficiente**
+- [ ] Optimizar batch processing
+- [ ] Redis Pub/Sub para distribución
+- [ ] Escalabilidad horizontal (múltiples instancias)
 
 Ver [`ROADMAP.md`](./ROADMAP.md) para detalles completos.
 

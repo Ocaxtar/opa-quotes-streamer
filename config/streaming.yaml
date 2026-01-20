@@ -1,134 +1,369 @@
-# OPA Quotes Streamer - Configuración Streaming 100 Tickers
-# Issue: OPA-265
-# Fecha: 2026-01-16
+# OPA Quotes Streamer - Configuración Streaming 300 Tickers S&P 500
+# Issue: OPA-288
+# Fecha: 2026-01-20
+# Actualizado desde OPA-265 (100 tickers) y OPA-286 (benchmark 300)
+#
+# Nota: Reemplazados 11 tickers sin datos en yfinance:
+# - ANSS, JNPR, MMC, DARDEN, K, BF.B, PXD, HES, MRO, IPG, PARA
+# Con: ON, CRWD, WTW, DRI, GIS/KR, STZ, FANG, DVN, APA, OMC, WBD, etc.
 
 sources:
   yahoo_finance:
     tickers:
-      # Technology (25)
-      - AAPL
-      - MSFT
-      - GOOGL
-      - GOOG
-      - AMZN
-      - META
-      - NVDA
-      - TSLA
-      - AVGO
-      - ORCL
-      - CSCO
-      - ADBE
-      - CRM
-      - INTC
-      - AMD
-      - QCOM
-      - TXN
-      - IBM
-      - INTU
-      - NOW
-      - AMAT
-      - LRCX
-      - KLAC
-      - SNPS
-      - CDNS
-      # Financials (20)
-      - JPM
-      - BAC
-      - WFC
-      - GS
-      - MS
-      - C
-      - BLK
-      - SCHW
-      - AXP
-      - SPGI
-      - BX
-      - USB
-      - PNC
-      - TFC
-      - COF
-      - CME
-      - ICE
-      - MCO
-      - AIG
-      - MET
-      # Healthcare (15)
-      - UNH
-      - JNJ
-      - LLY
-      - ABBV
-      - MRK
-      - TMO
-      - ABT
-      - PFE
-      - DHR
-      - BMY
-      - AMGN
-      - GILD
-      - CVS
-      - CI
-      - ISRG
-      # Consumer Discretionary (10)
-      - HD
-      - MCD
-      - NKE
-      - SBUX
-      - LOW
-      - TJX
-      - BKNG
-      - GM
-      # Consumer Staples (8)
-      - WMT
-      - PG
-      - KO
-      - PEP
-      - COST
-      - PM
-      - MO
-      - CL
-      # Energy (6)
-      - XOM
-      - CVX
-      - COP
-      - SLB
-      - EOG
-      - PSX
-      # Industrials (8)
-      - BA
-      - CAT
-      - UNP
-      - HON
-      - UPS
-      - RTX
-      - LMT
-      - DE
-      # Communication Services (4)
-      - DIS
-      - CMCSA
-      # Utilities (2)
-      - NEE
-      - DUK
-      # Real Estate (2)
-      - PLD
-      - AMT
-      # Additional Healthcare
-      - VRTX
-      - REGN
-      - BIIB
-      - MRNA
+      # ============================================
+      # Technology (50)
+      # ============================================
+      - AAPL      # Apple Inc
+      - MSFT      # Microsoft Corp
+      - GOOGL     # Alphabet Inc Class A
+      - GOOG      # Alphabet Inc Class C
+      - AMZN      # Amazon.com Inc
+      - META      # Meta Platforms Inc
+      - NVDA      # NVIDIA Corp
+      - TSLA      # Tesla Inc
+      - AVGO      # Broadcom Inc
+      - ORCL      # Oracle Corp
+      - CSCO      # Cisco Systems Inc
+      - ADBE      # Adobe Inc
+      - CRM       # Salesforce Inc
+      - INTC      # Intel Corp
+      - AMD       # Advanced Micro Devices
+      - QCOM      # Qualcomm Inc
+      - TXN       # Texas Instruments
+      - IBM       # IBM Corp
+      - INTU      # Intuit Inc
+      - NOW       # ServiceNow Inc
+      - AMAT      # Applied Materials
+      - LRCX      # Lam Research Corp
+      - KLAC      # KLA Corp
+      - SNPS      # Synopsys Inc
+      - CDNS      # Cadence Design Systems
+      - MU        # Micron Technology
+      - ADI       # Analog Devices Inc
+      - MCHP      # Microchip Technology
+      - FTNT      # Fortinet Inc
+      - PANW      # Palo Alto Networks
+      - NXPI      # NXP Semiconductors
+      - MPWR      # Monolithic Power Systems
+      - KEYS      # Keysight Technologies
+      - ON        # ON Semiconductor (reemplazo ANSS)
+      - SWKS      # Skyworks Solutions
+      - CTSH      # Cognizant Tech Solutions
+      - IT        # Gartner Inc
+      - HPQ       # HP Inc
+      - HPE       # Hewlett Packard Enterprise
+      - DELL      # Dell Technologies
+      - NTAP      # NetApp Inc
+      - CRWD      # CrowdStrike Holdings (reemplazo JNPR)
+      - WDC       # Western Digital
+      - STX       # Seagate Technology
+      - FFIV      # F5 Inc
+      - AKAM      # Akamai Technologies
+      - ZBRA      # Zebra Technologies
+      - GEN       # Gen Digital Inc
+      - EPAM      # EPAM Systems Inc
+      - ENPH      # Enphase Energy Inc
+      
+      # ============================================
+      # Financials (45)
+      # ============================================
+      - JPM       # JPMorgan Chase & Co
+      - BAC       # Bank of America Corp
+      - WFC       # Wells Fargo & Co
+      - GS        # Goldman Sachs Group
+      - MS        # Morgan Stanley
+      - C         # Citigroup Inc
+      - BLK       # BlackRock Inc
+      - SCHW      # Charles Schwab Corp
+      - AXP       # American Express Co
+      - SPGI      # S&P Global Inc
+      - BX        # Blackstone Inc
+      - USB       # U.S. Bancorp
+      - PNC       # PNC Financial Services
+      - TFC       # Truist Financial Corp
+      - COF       # Capital One Financial
+      - CME       # CME Group Inc
+      - ICE       # Intercontinental Exchange
+      - MCO       # Moody's Corp
+      - AIG       # American International Group
+      - MET       # MetLife Inc
+      - PRU       # Prudential Financial
+      - AFL       # Aflac Inc
+      - TRV       # Travelers Companies
+      - CB        # Chubb Ltd
+      - ALL       # Allstate Corp
+      - PGR       # Progressive Corp
+      - HIG       # Hartford Financial Services
+      - AJG       # Arthur J Gallagher & Co
+      - WTW       # Willis Towers Watson (reemplazo MMC)
+      - AON       # Aon plc
+      - MSCI      # MSCI Inc
+      - FIS       # Fidelity National Info
+      - FISV      # Fiserv Inc
+      - GPN       # Global Payments Inc
+      - PYPL      # PayPal Holdings Inc
+      - V         # Visa Inc
+      - MA        # Mastercard Inc
+      - AMP       # Ameriprise Financial
+      - RJF       # Raymond James Financial
+      - NTRS      # Northern Trust Corp
+      - STT       # State Street Corp
+      - BK        # Bank of New York Mellon
+      - CFG       # Citizens Financial Group
+      - RF        # Regions Financial Corp
+      - FITB      # Fifth Third Bancorp
+      
+      # ============================================
+      # Healthcare (45)
+      # ============================================
+      - UNH       # UnitedHealth Group
+      - JNJ       # Johnson & Johnson
+      - LLY       # Eli Lilly & Co
+      - ABBV      # AbbVie Inc
+      - MRK       # Merck & Co Inc
+      - TMO       # Thermo Fisher Scientific
+      - ABT       # Abbott Laboratories
+      - PFE       # Pfizer Inc
+      - DHR       # Danaher Corp
+      - BMY       # Bristol-Myers Squibb
+      - AMGN      # Amgen Inc
+      - GILD      # Gilead Sciences Inc
+      - CVS       # CVS Health Corp
+      - CI        # Cigna Group
+      - ISRG      # Intuitive Surgical Inc
+      - VRTX      # Vertex Pharmaceuticals
+      - REGN      # Regeneron Pharmaceuticals
+      - BIIB      # Biogen Inc
+      - MRNA      # Moderna Inc
+      - MDT       # Medtronic plc
+      - SYK       # Stryker Corp
+      - BSX       # Boston Scientific Corp
+      - ZBH       # Zimmer Biomet Holdings
+      - EW        # Edwards Lifesciences
+      - BDX       # Becton Dickinson & Co
+      - DXCM      # DexCom Inc
+      - IDXX      # IDEXX Laboratories
+      - IQV       # IQVIA Holdings Inc
+      - A         # Agilent Technologies
+      - MTD       # Mettler-Toledo International
+      - WAT       # Waters Corp
+      - HOLX      # Hologic Inc
+      - ALGN      # Align Technology Inc
+      - TECH      # Bio-Techne Corp
+      - RVTY      # Revvity Inc
+      - CRL       # Charles River Laboratories
+      - DGX       # Quest Diagnostics Inc
+      - LH        # Labcorp Holdings Inc
+      - HCA       # HCA Healthcare Inc
+      - ELV       # Elevance Health Inc
+      - CNC       # Centene Corp
+      - MOH       # Molina Healthcare Inc
+      - HUM       # Humana Inc
+      - MCK       # McKesson Corp
+      - CAH       # Cardinal Health Inc
+      
+      # ============================================
+      # Consumer Discretionary (35)
+      # ============================================
+      - HD        # Home Depot Inc
+      - MCD       # McDonald's Corp
+      - NKE       # Nike Inc
+      - SBUX      # Starbucks Corp
+      - LOW       # Lowe's Companies Inc
+      - TJX       # TJX Companies Inc
+      - BKNG      # Booking Holdings Inc
+      - GM        # General Motors Co
+      - F         # Ford Motor Co
+      - TGT       # Target Corp
+      - ROST      # Ross Stores Inc
+      - CMG       # Chipotle Mexican Grill
+      - DHI       # D.R. Horton Inc
+      - LEN       # Lennar Corp
+      - PHM       # PulteGroup Inc
+      - NVR       # NVR Inc
+      - ORLY      # O'Reilly Automotive
+      - AZO       # AutoZone Inc
+      - BBY       # Best Buy Co Inc
+      - DRI       # Darden Restaurants
+      - MAR       # Marriott International
+      - HLT       # Hilton Worldwide Holdings
+      - WYNN      # Wynn Resorts Ltd
+      - LVS       # Las Vegas Sands Corp
+      - MGM       # MGM Resorts International
+      - RCL       # Royal Caribbean Cruises
+      - CCL       # Carnival Corp
+      - EXPE      # Expedia Group Inc
+      - ABNB      # Airbnb Inc
+      - UBER      # Uber Technologies Inc
+      - LYFT      # Lyft Inc
+      - DPZ       # Domino's Pizza Inc
+      - YUM       # Yum! Brands Inc
+      - QSR       # Restaurant Brands Int'l
+      - EBAY      # eBay Inc
+      
+      # ============================================
+      # Consumer Staples (25)
+      # ============================================
+      - WMT       # Walmart Inc
+      - PG        # Procter & Gamble Co
+      - KO        # Coca-Cola Co
+      - PEP       # PepsiCo Inc
+      - COST      # Costco Wholesale Corp
+      - PM        # Philip Morris International
+      - MO        # Altria Group Inc
+      - CL        # Colgate-Palmolive Co
+      - EL        # Estee Lauder Companies
+      - KMB       # Kimberly-Clark Corp
+      - MDLZ      # Mondelez International
+      - GIS       # General Mills Inc
+      - KR        # Kroger Co
+      - HSY       # Hershey Co
+      - CPB       # Campbell Soup Co
+      - SJM       # J.M. Smucker Co
+      - CAG       # Conagra Brands Inc
+      - HRL       # Hormel Foods Corp
+      - TSN       # Tyson Foods Inc
+      - KHC       # Kraft Heinz Co
+      - TAP       # Molson Coors Beverage
+      - STZ       # Constellation Brands
+      - ADM       # Archer-Daniels-Midland
+      - BG        # Bunge Global SA
+      - SYY       # Sysco Corp
+      
+      # ============================================
+      # Energy (25)
+      # ============================================
+      - XOM       # Exxon Mobil Corp
+      - CVX       # Chevron Corp
+      - COP       # ConocoPhillips
+      - SLB       # Schlumberger Ltd
+      - EOG       # EOG Resources Inc
+      - PSX       # Phillips 66
+      - MPC       # Marathon Petroleum Corp
+      - VLO       # Valero Energy Corp
+      - OXY       # Occidental Petroleum
+      - FANG      # Diamondback Energy
+      - DVN       # Devon Energy Corp
+      - HAL       # Halliburton Co
+      - BKR       # Baker Hughes Co
+      - KMI       # Kinder Morgan Inc
+      - WMB       # Williams Companies Inc
+      - OKE       # ONEOK Inc
+      - ET        # Energy Transfer LP
+      - TRGP      # Targa Resources Corp
+      - LNG       # Cheniere Energy Inc
+      - APA       # APA Corp
+      - CTRA      # Coterra Energy Inc
+      - EQT       # EQT Corp
+      - TPL       # Texas Pacific Land Corp
+      - DINO      # HF Sinclair Corp
+      - AR        # Antero Resources Corp
+      
+      # ============================================
+      # Industrials (40)
+      # ============================================
+      - BA        # Boeing Co
+      - CAT       # Caterpillar Inc
+      - UNP       # Union Pacific Corp
+      - HON       # Honeywell International
+      - UPS       # United Parcel Service
+      - RTX       # RTX Corp
+      - LMT       # Lockheed Martin Corp
+      - DE        # Deere & Co
+      - GE        # General Electric Co
+      - MMM       # 3M Co
+      - EMR       # Emerson Electric Co
+      - ITW       # Illinois Tool Works
+      - ETN       # Eaton Corp plc
+      - PH        # Parker-Hannifin Corp
+      - ROK       # Rockwell Automation
+      - CMI       # Cummins Inc
+      - PCAR      # PACCAR Inc
+      - FAST      # Fastenal Co
+      - GWW       # W.W. Grainger Inc
+      - SWK       # Stanley Black & Decker
+      - IR        # Ingersoll Rand Inc
+      - DOV       # Dover Corp
+      - XYL       # Xylem Inc
+      - NDSN      # Nordson Corp
+      - IEX       # IDEX Corp
+      - AME       # AMETEK Inc
+      - ROP       # Roper Technologies Inc
+      - TT        # Trane Technologies plc
+      - CARR      # Carrier Global Corp
+      - OTIS      # Otis Worldwide Corp
+      - TDG       # TransDigm Group Inc
+      - HWM       # Howmet Aerospace Inc
+      - TXT       # Textron Inc
+      - NOC       # Northrop Grumman Corp
+      - GD        # General Dynamics Corp
+      - LHX       # L3Harris Technologies
+      - LDOS      # Leidos Holdings Inc
+      - J         # Jacobs Solutions Inc
+      - FDX       # FedEx Corp
+      - CSX       # CSX Corp
+      
+      # ============================================
+      # Communication Services (15)
+      # ============================================
+      - DIS       # Walt Disney Co
+      - CMCSA     # Comcast Corp
+      - NFLX      # Netflix Inc
+      - T         # AT&T Inc
+      - VZ        # Verizon Communications
+      - TMUS      # T-Mobile US Inc
+      - CHTR      # Charter Communications
+      - EA        # Electronic Arts Inc
+      - TTWO      # Take-Two Interactive
+      - WBD       # Warner Bros Discovery
+      - FOXA      # Fox Corp Class A
+      - FOX       # Fox Corp Class B
+      - OMC       # Omnicom Group Inc
+      - MTCH      # Match Group Inc
+      - LYV       # Live Nation Entertainment
+      
+      # ============================================
+      # Utilities (10)
+      # ============================================
+      - NEE       # NextEra Energy Inc
+      - DUK       # Duke Energy Corp
+      - SO        # Southern Co
+      - D         # Dominion Energy Inc
+      - AEP       # American Electric Power
+      - SRE       # Sempra
+      - EXC       # Exelon Corp
+      - XEL       # Xcel Energy Inc
+      - ED        # Consolidated Edison Inc
+      - PEG       # Public Service Enterprise
+      
+      # ============================================
+      # Real Estate (10)
+      # ============================================
+      - PLD       # Prologis Inc
+      - AMT       # American Tower Corp
+      - CCI       # Crown Castle Inc
+      - EQIX      # Equinix Inc
+      - PSA       # Public Storage
+      - SPG       # Simon Property Group
+      - O         # Realty Income Corp
+      - WELL      # Welltower Inc
+      - DLR       # Digital Realty Trust
+      - AVB       # AvalonBay Communities
     
-    # Configuration
-    fetch_interval: 60  # Fetch every 60 seconds
-    batch_size: 10      # Process 10 tickers at a time
-    timeout: 5          # Timeout for each request (seconds)
-    retries: 3          # Number of retries on failure
+    # ============================================
+    # Configuration (optimizada para 300 tickers)
+    # ============================================
+    fetch_interval: 60    # Fetch every 60 seconds
+    batch_size: 30        # 30 tickers per batch (~10 batches total)
+    timeout: 10           # Timeout for each request (seconds)
+    retries: 3            # Number of retries on failure
     
 publishers:
   storage:
-    enabled: false  # Deshabilitado temporalmente - requiere opa-quotes-storage con API REST
+    enabled: false  # Pendiente: habilitar cuando opa-quotes-storage tenga API REST
     endpoint: "http://localhost:5001/api/v1/quotes"
-    batch_size: 50
-    timeout: 10
+    batch_size: 100
+    timeout: 15
 
 logging:
   level: "INFO"
@@ -140,7 +375,16 @@ metrics:
   port: 9090
   path: "/metrics"
 
-# Runtime settings for validation run
+# Runtime settings
 validation:
-  duration: 3600  # Run for 1 hour (3600 seconds)
-  report_interval: 300  # Report metrics every 5 minutes
+  duration: 3600        # 1 hour validation run
+  report_interval: 300  # Report every 5 minutes
+
+# ============================================
+# Benchmark Results (OPA-286)
+# ============================================
+# - Python scales to 300 tickers ✅
+# - Batch latency ~30-40s within 60s polling interval ✅
+# - Memory stable at ~240MB ✅
+# - 0 errors, 0 gaps ✅
+# - Decision: Continue with Python (ADR-019 / OPA-289)
