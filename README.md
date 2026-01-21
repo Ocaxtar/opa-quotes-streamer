@@ -288,7 +288,7 @@ Este servicio actúa como **Producer** en el flujo de cotizaciones:
 
 #### POST /quotes/batch (Producer)
 
-**Contract**: [Quotes Batch Contract](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/contracts/apis/quotes-batch.md)
+**Contract**: [Quotes Batch Contract](https://github.com/Ocaxtar/opa-supervisor/blob/main/docs/contracts/apis/quotes-batch.md)
 
 - **Role**: Producer (genera y envía quotes)
 - **Consumer**: opa-quotes-api
@@ -379,7 +379,7 @@ async def publish_large_batch(quotes: List[Quote]):
 
 #### Other Contracts
 
-Ver contrato de datos: [`docs/contracts/data-models/quotes.md`](../OPA_Machine/docs/contracts/data-models/quotes.md) en repositorio supervisor.
+Ver contrato de datos: [`docs/contracts/data-models/quotes.md`](../opa-supervisor/docs/contracts/data-models/quotes.md) en repositorio supervisor.
 
 **Schema Quote**:
 
@@ -512,11 +512,11 @@ Ver [`AGENTS.md`](./AGENTS.md) para guías de agentes IA.
 
 ## 📄 Licencia
 
-MIT License - Ver [LICENSE](../OPA_Machine/LICENSE) en repositorio supervisor.
+MIT License - Ver [LICENSE](../opa-supervisor/LICENSE) en repositorio supervisor.
 
 ## 🔗 Enlaces
 
-- **Repositorio Supervisor**: [OPA_Machine](https://github.com/Ocaxtar/OPA_Machine)
-- **Contratos**: [`docs/contracts/`](../OPA_Machine/docs/contracts/)
-- **ADRs**: [`docs/adr/`](../OPA_Machine/docs/adr/)
+- **Repositorio Supervisor**: [OPA_Machine](https://github.com/Ocaxtar/opa-supervisor)
+- **Contratos**: [`docs/contracts/`](../opa-supervisor/docs/contracts/)
+- **ADRs**: [`docs/adr/`](../opa-supervisor/docs/adr/)
 - **Linear**: [Proyecto opa-quotes-streamer](https://linear.app/opa-machine/team/OPA/project/opa-quotes-streamer)
