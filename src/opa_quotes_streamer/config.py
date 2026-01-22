@@ -4,6 +4,27 @@ from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
+# OPA-325: Helper to load Redis config from state.yaml
+def _get_redis_url_default() -> str:
+    """Get default Redis URL from state.yaml or fallback."""
+    import sys
+    from pathlib import Path
+    
+    default_url = "redis://localhost:6381"
+    try:
+        infra_state_path = Path(__file__).parent.parent.parent / 'opa-infrastructure-state'
+        if infra_state_path.exists():
+            sys.path.insert(0, str(infra_state_path))
+            from config_loader import get_redis_config
+            config = get_redis_config()
+            default_url = f"redis://{{config['host']}}:{{config['port']}}"
+            print(f"✓ OPA-325: Loaded Redis config from state.yaml: port={{config['port']}}")
+    except Exception:
+        pass  # Fallback to default
+    return default_url
+
+
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables.
@@ -68,9 +89,9 @@ class Settings(BaseSettings):
         description="Enable/disable storage publisher"
     )
     
-    # Redis Pub/Sub configuration
+    # Redis Pub/Sub configuration (OPA-325: loads from state.yaml)
     redis_url: str = Field(
-        default="redis://localhost:6381",
+        default=_get_redis_url_default(),
         description="Redis connection URL for Pub/Sub"
     )
     redis_channel: str = Field(
@@ -80,6 +101,12 @@ class Settings(BaseSettings):
     redis_publisher_enabled: bool = Field(
         default=True,
         description="Enable/disable Redis publisher"
+    )
+    redis_publish_batch_size: int = Field(
+        default=100,
+        ge=1,
+        le=1000,
+        description="Batch size for Redis publish pipeline"
     )
     
     # Circuit breaker
