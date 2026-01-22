@@ -30,7 +30,7 @@ Implementar y operar pipelines de streaming de alta frecuencia (1000+ tickers, <
 
 | Acción | Documento/Skill | Cuándo |
 |--------|-----------------|--------|
-| 🔄 **Sincronizar workspace** | Script `scripts/git/check_sync.sh` (incluye activación MCP) | ⚠️ **INICIO DE CADA RUN** |
+| 🔄 **Sincronizar workspace** | Script `scripts/git/check_sync.ps1` (incluye activación MCP) | ⚠️ **INICIO DE CADA RUN** |
 | Consultar infraestructura | [opa-infrastructure-state](https://github.com/Ocaxtar/opa-infrastructure-state) | ⚠️ **ANTES** de Docker/DB/Redis |
 | Operar Docker/conexiones | Ver [service-inventory.md](https://github.com/Ocaxtar/opa-supervisor/blob/main/docs/infrastructure/service-inventory.md) | ⚠️ **SIEMPRE** antes de Docker |
 | Trabajar en issue | Skill global `git-linear-workflow` | Antes de branch/commit |
@@ -39,8 +39,8 @@ Implementar y operar pipelines de streaming de alta frecuencia (1000+ tickers, <
 ### Sincronización Automática
 
 **Al inicio de cada run, ejecutar**:
-```bash
-bash scripts/git/check_sync.sh
+```powershell
+.\scripts\git\check_sync.ps1
 ```
 
 **Exit codes**:

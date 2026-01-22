@@ -101,22 +101,22 @@ while running:
 
 ### Instalación
 
-```bash
+```powershell
 # Clonar repositorio
 git clone https://github.com/Ocaxtar/opa-quotes-streamer.git
-cd opa-quotes-streamer
+Set-Location opa-quotes-streamer
 
 # Instalar dependencias
 poetry install
 
 # Configurar entorno
-cp .env.example .env
+Copy-Item .env.example .env
 # Editar .env con configuración local
 ```
 
 ### Configuración (.env)
 
-```bash
+```env
 # Tickers a monitorizar (ver config/streaming.yaml para lista completa de 300)
 TICKERS=AAPL,MSFT,GOOGL,AMZN,TSLA,META,NVDA,JPM,V,WMT,...
 
@@ -142,7 +142,7 @@ LOG_LEVEL=INFO
 
 #### Desarrollo (Python)
 
-```bash
+```powershell
 # Activar entorno
 poetry shell
 
@@ -160,7 +160,7 @@ python -m opa_quotes_streamer.main
 
 #### Docker Compose
 
-```bash
+```powershell
 # Build e iniciar servicios (streamer + storage mock + prometheus)
 docker-compose up -d
 
@@ -200,7 +200,7 @@ docker-compose down
 
 ### Ejecución
 
-```bash
+```powershell
 # Tests unitarios
 poetry run pytest tests/unit -v
 
@@ -251,9 +251,9 @@ Expuestas en `http://localhost:8001/metrics`
 
 ### Health Check
 
-```bash
+```powershell
 # Endpoint /health
-curl http://localhost:8001/health
+Invoke-RestMethod http://localhost:8001/health
 
 # Respuesta esperada
 {
@@ -305,7 +305,7 @@ Este servicio actúa como **Producer** en el flujo de cotizaciones:
 - ✅ **INV-007**: Send `Content-Type: application/json` header
 
 **Testing contract compliance**:
-```bash
+```powershell
 # Verify producer invariants
 pytest tests/test_storage_publisher.py::test_batch_invariants -v
 
@@ -436,7 +436,7 @@ AVAILABLE_SOURCES = {
 **Síntoma**: `streamer_rate_limit_hits_total` incrementa
 
 **Solución**:
-```bash
+```powershell
 # Aumentar POLLING_INTERVAL en .env
 POLLING_INTERVAL=10  # De 5s a 10s
 
@@ -449,9 +449,9 @@ TICKERS=AAPL,MSFT,GOOGL  # De 10 a 3
 **Síntoma**: `streamer_errors_total{type="publish"}` incrementa
 
 **Solución**:
-```bash
+```powershell
 # Verificar opa-quotes-storage está corriendo
-curl http://localhost:8000/health
+Invoke-RestMethod http://localhost:8000/health
 
 # Verificar configuración .env
 STORAGE_API_URL=http://localhost:8000  # Debe coincidir con docker-compose
@@ -462,9 +462,9 @@ STORAGE_API_URL=http://localhost:8000  # Debe coincidir con docker-compose
 **Síntoma**: `streamer_fetch_duration_seconds` p99 > 5s
 
 **Diagnóstico**:
-```bash
+```powershell
 # Ver logs de yfinance
-docker-compose logs -f streamer | grep "yfinance"
+docker-compose logs -f streamer | Select-String "yfinance"
 
 # Posibles causas:
 # - Red lenta
