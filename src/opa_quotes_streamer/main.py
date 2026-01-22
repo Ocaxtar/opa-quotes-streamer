@@ -118,12 +118,12 @@ class StreamingService:
                             
                             # Update circuit breaker state metric
                             redis_cb_state = self.redis_publisher._circuit_breaker.state
-                            self.metrics.set_circuit_breaker_state("redis", redis_cb_state)
+                            self.metrics.set_circuit_breaker_state("redis", redis_cb_state.value)
                         except Exception as e:
                             logger.warning(f"Redis publisher error: {e}")
                             self.metrics.record_error("redis_publish")
                             redis_cb_state = self.redis_publisher._circuit_breaker.state
-                            self.metrics.set_circuit_breaker_state("redis", redis_cb_state)
+                            self.metrics.set_circuit_breaker_state("redis", redis_cb_state.value)
                     
                     # Publish to storage (if enabled)
                     if settings.publisher_enabled:
