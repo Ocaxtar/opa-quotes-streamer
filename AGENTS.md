@@ -1,164 +1,192 @@
-# AGENTS.md - Guía para Agentes de IA (opa-quotes-streamer)
+# AGENTS.md - opa-quotes-streamer
 
-## Identidad y Misión
-
-**Nombre**: Agente de Streaming de Cotizaciones (Módulo 5)
-**Workspace**: `opa-quotes-streamer`
-**Repositorio**: `opa-quotes-streamer`
-**Rol**: Ingesta en tiempo real de cotizaciones desde múltiples fuentes (Yahoo Finance, Alpha Vantage)
-**Stack**: Rust 1.75+, Tokio, WebSockets, PostgreSQL client
-
-### Objetivo Principal
-Implementar y operar pipelines de streaming de alta frecuencia (1000+ tickers, <50ms latency) con circuit breakers, backpressure y recovery automático. Este servicio alimenta a `opa-quotes-storage` con datos en tiempo real.
-
-### Documentación Base (Lectura Obligatoria)
-1. **[ECOSYSTEM_CONTEXT.md](docs/ECOSYSTEM_CONTEXT.md)**: Posición en arquitectura global
-2. **[DEVELOPMENT.md](docs/DEVELOPMENT.md)**: Setup técnico, testing y estándares
-3. **[ROADMAP.md](ROADMAP.md)**: Objetivos Fase 1 (Cotización 40%)
-
-### Principios de Operación
-1. **Respeto Absoluto a los Contratos**: Consultar `docs/contracts/events/quotes-stream.md`
-2. **Resiliencia**: Circuit breakers ante fallos de fuentes externas
-3. **Performance**: Procesamiento asíncrono con Tokio, sin bloqueos
-4. **Etiquetado Estricto**: Solo trabajar en issues con label `opa-quotes-streamer`
+> 🎯 **Guía específica para agentes IA** en este repo operativo.  
+> **Supervisión**: [OPA_Machine/AGENTS.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/AGENTS.md)
 
 ---
 
 ## 🚦 Pre-Flight Checklist (OBLIGATORIO)
 
-**Antes de cualquier operación, verificar**:
-
 | Acción | Documento/Skill | Cuándo |
 |--------|-----------------|--------|
-| 🔄 **Sincronizar workspace** | Script `scripts/git/check_sync.sh` (incluye activación MCP) | ⚠️ **INICIO DE CADA RUN** |
-| Consultar infraestructura | [opa-infrastructure-state](https://github.com/Ocaxtar/opa-infrastructure-state) | ⚠️ **ANTES** de Docker/DB/Redis |
-| Operar Docker/conexiones | Ver [service-inventory.md](https://github.com/Ocaxtar/opa-supervisor/blob/main/docs/infrastructure/service-inventory.md) | ⚠️ **SIEMPRE** antes de Docker |
-| Trabajar en issue | Skill global `git-linear-workflow` | Antes de branch/commit |
-| Usar Linear MCP tools | Skill global `linear-mcp-tool` | Si tool falla/necesitas categorías extra |
-
-### Sincronización Automática
-
-**Al inicio de cada run, ejecutar**:
-```bash
-bash scripts/git/check_sync.sh
-```
-
-**Exit codes**:
-- `0`: ✅ Sincronizado (continuar)
-- `2`: ⚠️ Commits locales sin push (avisar usuario)
-- `3`: ⚠️ Cambios remotos en código (avisar usuario)
-- `4`: ❌ Divergencia detectada (requerir resolución manual)
-- `5`: ⚠️ No se pudo conectar con remoto
-
-**Pull automático**: Si solo hay cambios en `docs/`, `AGENTS.md`, `README.md`, `ROADMAP.md` → pull automático aplicado.
-
-**Activación MCP incluida**: El skill `workspace-sync` del supervisor OPA_Machine activa automáticamente los grupos principales de MCP tools (Linear Issues, Workspace Overview, GitHub Repos, GitHub Issues). Si necesitas tools de categorías adicionales (documentos, tracking, team management, PR reviews), actívalas bajo demanda.
-
-**Ver detalles completos**: Consultar skill `workspace-sync` en opa-supervisor.
+| Consultar infraestructura | [opa-infrastructure-state](https://github.com/Ocaxtar/opa-infrastructure-state/blob/main/state.yaml) | ANTES de Docker/DB/Redis |
+| Sincronizar workspace | Skill `workspace-sync` (supervisor) | Inicio sesión |
+| Verificar estado repos | [DASHBOARD.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/DASHBOARD.md) | Inicio sesión |
+| Trabajar en issue | Skill `git-linear-workflow` | Antes branch/commit |
+| Usar Linear MCP | Skill `linear-mcp-tool` | Si tool falla/UUID |
 
 ---
 
-## 📚 Skills Disponibles
+## 📋 Info del Repositorio
 
-**Skills Globales** (ubicación: `~/.copilot/skills/`):
+**Nombre**: opa-quotes-streamer  
+**Tipo**: Streamer (Rust)  
+**Propósito**: Recolección streaming de ~300 tickers desde fuentes públicas (Polygon.io, Alpha Vantage)  
+**Puerto**: Ninguno (background service)  
+**Team Linear**: OPA  
+**Tecnologías**: Rust 1.74, Tokio (async runtime), Redis (pub/sub), PostgreSQL (escritura directa)
 
-| Skill | Propósito |
-|-------|-----------|
-| `git-linear-workflow` | Workflow Git+Linear completo |
-| `linear-mcp-tool` | Errores MCP Linear y soluciones |
-| `run-efficiency` | Gestión tokens, pre-Done checklist |
+**Funcionalidad**:
+- WebSocket connections a múltiples providers
+- Procesamiento concurrente (300+ streams simultáneos)
+- Escritura a Redis (canal `quotes:stream`) para real-time
+- Escritura a PostgreSQL (opa-quotes-storage) para históricos
+- Backpressure management y reconexión automática
 
-> ⚠️ **Nota**: Skills ya no tienen carpeta local `.github/skills/`. Están centralizados en ubicación global del usuario.
-
-**Skills OPA específicos**: Ver [opa-supervisor/.github/skills/](https://github.com/Ocaxtar/opa-supervisor/tree/main/.github/skills) para skills de arquitectura, auditoría y transición de fases.
-
-**Guías de referencia** (supervisor):
-- **[code-conventions.md](https://github.com/Ocaxtar/opa-supervisor/blob/main/docs/guides/code-conventions.md)**: Estándares código, testing, CI/CD
-- **[technology-stack.md](https://github.com/Ocaxtar/opa-supervisor/blob/main/docs/guides/technology-stack.md)**: Stack tecnológico consolidado
-
-**Convención idiomática**:
-- **Código y nombres técnicos** (clases, funciones, commits): **Inglés**
-- **Interacción con usuarios** (comentarios Linear, PRs, docs narrativa): **Español**
+**Dependencias**:
+- opa-quotes-storage (PostgreSQL escritura en puerto 5433)
+- Redis (pub/sub canal `quotes:stream`)
 
 ---
 
-## 🔧 Gestión de Tools MCP (Linear, GitHub)
+## 🎯 Skills Disponibles (carga bajo demanda)
 
-**REGLA CRÍTICA**: Muchas tools de Linear/GitHub requieren activación explícita antes de uso.
+| Skill | Ubicación | Triggers |
+|-------|-----------|----------|
+| `git-linear-workflow` | `~/.copilot/skills/` | issue, branch, commit, PR |
+| `linear-mcp-tool` | `~/.copilot/skills/` | error Linear, UUID |
+| `run-efficiency` | `~/.copilot/skills/` | tokens, context |
 
-### Workflow de Activación
-
-Si intentas usar una tool y fallas con:
-```
-Tool mcp_linear_create_issue is currently disabled by the user, and cannot be called.
-ERROR: Tool not found or not activated
-```
-
-**NO continúes sin la tool**. Debes:
-1. ✅ Activar el grupo de tools correspondiente
-2. ✅ Reintentar la operación original
-3. ❌ NUNCA saltar el paso o usar alternativa
-
-### Tools que Requieren Activación
-
-| Grupo | Tool de Activación | Cuándo Usar |
-|-------|-------------------|-------------|
-| Linear Issues | `activate_issue_management_tools()` | Crear/actualizar issues, labels |
-| Linear Docs | `activate_document_management_tools()` | Crear/actualizar documentos |
-| GitHub PRs | `activate_pull_request_review_tools()` | Crear/revisar PRs |
-| GitHub Repos | `activate_repository_management_tools()` | Crear repos, branches |
+**Skills supervisor** (consultar desde [supervisor](https://github.com/Ocaxtar/OPA_Machine)):
+- `multi-workspace`, `contract-validator`, `ecosystem-auditor`
 
 ---
 
-## 🛡️ Validación de Convenciones
+## 🔄 Workflows Especiales
 
-### Convenciones Obligatorias
+### Schemas DB del Ecosistema (OPA-343)
 
-1. **Commits**: DEBEN incluir referencia a issue (`OPA-XXX`)
-2. **Issues**: DEBEN crearse en Linear ANTES de implementar
-3. **Branches**: DEBEN seguir patrón `username/opa-xxx-descripcion`
-4. **Tests**: DEBEN ejecutarse antes de marcar Done
+**Nota**: Este repo (Rust) no crea SQLAlchemy models, pero para contexto:
 
-### 📝 Comentarios vs Descripción en Issues
+El ecosistema usa [state-db-schemas.yaml.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/infrastructure/state-db-schemas.yaml.md) como **source of truth** de schemas DB reales.
 
-**PRINCIPIO**: La **descripción** es la **especificación inicial**. Los **comentarios** son el **registro de progreso**.
+**Tablas del módulo Quotes**:
+- `quotes.quotes` - Almacenado en opa-quotes-storage (TimescaleDB)
+- Este streamer escribe via conexión PostgreSQL directa (no ORM)
 
-| Acción | Tool Correcta | Tool Incorrecta |
-|--------|---------------|-----------------|
-| Reportar avance | `mcp_linear_create_comment()` | ❌ `update_issue(body=...)` |
-| Reactivar issue | `create_comment()` + `update_issue(state=...)` | ❌ Solo modificar descripción |
+---
 
-### Prefijo Obligatorio en Comentarios
+## 🛠️ Gestión de MCP Tools
+
+### Activar Grupos de Herramientas
 
 ```
-🤖 Agente opa-quotes-streamer: [tu mensaje]
+❌ Llamar mcp_github-* sin activar
+✅ SIEMPRE activar grupo antes:
+    1. activate_repository_management_tools()
+    2. LUEGO mcp_github-mcp_create_branch(...)
 ```
 
----
-
-## ⚠️ Validación Pre-cierre de Issue (CRÍTICO)
-
-**REGLA DE ORO**: Si un archivo NO está en GitHub en rama `main`, la issue NO está "Done".
-
-### Pre-Done Checklist
-
-- [ ] `git status` limpio
-- [ ] Commit con referencia `OPA-XXX`
-- [ ] `git push` ejecutado
-- [ ] Archivos visibles en GitHub web
-- [ ] Comentario de cierre con prefijo 🤖
+**Grupos disponibles**:
+- `activate_repository_management_tools()` - branches, PRs, repos
+- `activate_pull_request_review_tools()` - reviews, comments
+- `activate_repository_information_tools()` - commits, releases, issues
+- `activate_search_and_discovery_tools()` - búsqueda código/repos
 
 ---
 
-## 🔗 Referencias Supervisor
+## ✅ Validación Pre-Done de Issues
 
-| Documento | Propósito |
-|-----------|-----------|
-| [AGENTS.md](https://github.com/Ocaxtar/opa-supervisor/blob/main/AGENTS.md) | Guía maestra |
-| [service-inventory.md](https://github.com/Ocaxtar/opa-supervisor/blob/main/docs/infrastructure/service-inventory.md) | Puertos y conflictos |
-| [opa-infrastructure-state](https://github.com/Ocaxtar/opa-infrastructure-state) | Estado infraestructura |
-| [Contratos](https://github.com/Ocaxtar/opa-supervisor/tree/main/docs/contracts) | APIs y schemas |
+### Antes de Cerrar Issues en Linear
+
+**OBLIGATORIO** verificar:
+
+1. **Cambios en main**:
+   ```bash
+   git log origin/main --oneline -5
+   # Verificar tu commit está en main
+   ```
+
+2. **CI/CD pasó**:
+   - GitHub Actions: ✅ All checks passed
+   - Si hay fallos, NO cerrar hasta resolverlos
+
+3. **Criterios de aceptación**:
+   - Revisar checklist en descripción issue
+   - Marcar todos los `[ ]` → `[x]`
+
+4. **Actualizar Linear con resumen**:
+   ```python
+   mcp_linear_create_comment(
+       issueId="uuid",
+       body="## ✅ Completado\n- Cambios en main: hash\n- CI pasó: ✅"
+   )
+   ```
+
+5. **SOLO ENTONCES** cerrar:
+   ```python
+   mcp_linear_update_issue(id="uuid", state="Done")
+   ```
 
 ---
 
-*Actualizado OPA-298: Skills migrados a ubicación global - 2026-01-21*
+## ⚠️ Reglas Críticas Específicas
+
+### 1. Puerto PostgreSQL = 5433 (NO 5432)
+
+```rust
+// ❌ Incorrecto
+let db_url = "postgresql://localhost:5432/opa_quotes";
+
+// ✅ Correcto
+let db_url = "postgresql://localhost:5433/opa_quotes";
+```
+
+**Motivo**: Windows local ocupa 5432. Ver [service-inventory.md](https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/infrastructure/service-inventory.md).
+
+### 2. Backpressure para escritura PostgreSQL
+
+```rust
+// ✅ Patrón obligatorio
+let (tx, mut rx) = mpsc::channel::<Quote>(1000);
+
+tokio::spawn(async move {
+    while let Some(quote) = rx.recv().await {
+        // Batch de 100 quotes o timeout de 5s
+        let batch = collect_batch(&mut rx, 100, Duration::from_secs(5)).await;
+        db.batch_insert(batch).await;
+    }
+});
+```
+
+**Motivo**: 300 streams → 900 quotes/sec → sin batching se satura PostgreSQL.
+
+### 3. Escritura dual (Redis + PostgreSQL)
+
+```rust
+// ✅ Correcto: Redis primero (no bloqueante), PostgreSQL después
+redis_client.publish("quotes:stream", &quote).await?;
+db_tx.send(quote).await?;  // Canal async → batch worker
+```
+
+**Orden**: Redis es crítico (real-time), PostgreSQL es secondary (históricos).
+
+---
+
+## 🔧 Convenciones
+
+| Elemento | Convención |
+|----------|------------|
+| **Idioma código** | Inglés |
+| **Idioma interacción** | Español |
+| **Formato commit** | `OPA-XXX: Descripción imperativa` |
+| **Branches** | `username/opa-xxx-descripcion` |
+| **Labels issues** | `Feature/Bug` + `opa-quotes-streamer` |
+| **Rust edition** | 2021 |
+| **MSRV** | 1.74.0 |
+
+---
+
+## 📚 Referencias
+
+| Recurso | URL |
+|---------|-----|
+| Supervisor AGENTS.md | https://github.com/Ocaxtar/OPA_Machine/blob/main/AGENTS.md |
+| opa-infrastructure-state | https://github.com/Ocaxtar/opa-infrastructure-state/blob/main/state.yaml |
+| DB Schemas Source of Truth | https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/infrastructure/state-db-schemas.yaml.md |
+| Service Inventory | https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/infrastructure/service-inventory.md |
+| DASHBOARD | https://github.com/Ocaxtar/OPA_Machine/blob/main/docs/DASHBOARD.md |
+
+---
+
+*Documento sincronizado con supervisor v2.1 (2026-01-21) - OPA-299*
