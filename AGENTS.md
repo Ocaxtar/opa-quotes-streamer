@@ -48,7 +48,7 @@
 | `run-efficiency` | `~/.copilot/skills/` | tokens, context |
 
 **Skills supervisor** (consultar desde [supervisor](https://github.com/Ocaxtar/OPA_Machine)):
-- `multi-workspace`, `contract-validator`, `ecosystem-auditor`
+- `multi-workspace`, `contract-validator`, `ecosystem-auditor`, `infrastructure-lookup`
 
 ---
 
@@ -163,6 +163,63 @@ db_tx.send(quote).await?;  // Canal async → batch worker
 
 ---
 
+## 🔧 Operaciones de Infraestructura
+
+> **OBLIGATORIO**: Ejecutar ANTES de cualquier operación Docker/DB/Redis.
+
+### Workflow de 3 Pasos
+
+#### Paso 1: Ejecutar Preflight Check
+
+```bash
+# Desde este repo
+python ../opa-supervisor/scripts/infrastructure/preflight_check.py --module quotes --operation docker-compose
+```
+
+#### Paso 2: Evaluar Resultado
+
+| Resultado | Acción |
+|-----------|--------|
+| ✅ PREFLIGHT PASSED | Continuar con la tarea |
+| ❌ PREFLIGHT FAILED | **NO continuar**. Reportar al usuario qué servicios faltan |
+
+#### Paso 3: Configurar usando state.yaml
+
+**Source of Truth**: `opa-infrastructure-state/state.yaml`
+
+```rust
+// ✅ CORRECTO: Leer de variables de entorno
+let db_url = std::env::var("DATABASE_URL")
+    .unwrap_or_else(|_| "postgresql://opa_user:opa_password@localhost:5433/opa_quotes".to_string());
+
+// ❌ INCORRECTO: Hardcodear valores
+let db_url = "postgresql://opa_user:opa_password@localhost:5433/opa_quotes";
+```
+
+### Anti-Patrones (PROHIBIDO)
+
+| Anti-Patrón | Por qué está mal |
+|-------------|------------------|
+| ❌ Consultar `service-inventory.md` como fuente | Es documento AUTO-GENERADO, no editable |
+| ❌ Hardcodear puertos/credenciales | Dificulta mantenimiento y causa bugs |
+| ❌ Asumir que servicio existe sin validar | Causa "Connection refused" en deploy |
+| ❌ Usar puerto 5432 para Docker | PostgreSQL local Windows lo ocupa |
+| ❌ Continuar si preflight falla | Propaga configuración inválida |
+
+### Quick Reference: Puertos
+
+| Servicio | Puerto | Módulo |
+|----------|--------|--------|
+| TimescaleDB Quotes | 5433 | Quotes |
+| TimescaleDB Capacity | 5434 | Capacity |
+| Redis Dev | 6381 | Shared |
+| quotes-api | 8000 | Quotes |
+| capacity-api | 8001 | Capacity |
+
+> **Source of Truth**: [opa-infrastructure-state/state.yaml](https://github.com/Ocaxtar/opa-infrastructure-state/blob/main/state.yaml)
+
+---
+
 ## 🔧 Convenciones
 
 | Elemento | Convención |
@@ -189,4 +246,4 @@ db_tx.send(quote).await?;  // Canal async → batch worker
 
 ---
 
-*Documento sincronizado con supervisor v2.1 (2026-01-21) - OPA-299*
+*Documento sincronizado con supervisor v2.1 (2026-01-26) - OPA-370*
