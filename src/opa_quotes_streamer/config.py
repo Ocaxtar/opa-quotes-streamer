@@ -1,8 +1,37 @@
 """Configuration management using Pydantic Settings."""
 
+import os
+from pathlib import Path
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+import yaml
+
+
+def load_tickers_from_yaml() -> str:
+    """Load tickers from YAML config file if TICKERS env var not set.
+    
+    Returns:
+        Comma-separated string of tickers
+    """
+    # If TICKERS is explicitly set, use it
+    if os.getenv("TICKERS"):
+        return os.getenv("TICKERS")
+    
+    # Try to load from config file
+    config_file = Path("/app/config/streaming-300.yaml")
+    if not config_file.exists():
+        config_file = Path(__file__).parent.parent.parent / "config" / "streaming-300.yaml"
+    
+    if config_file.exists():
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
+            tickers = config.get('sources', {}).get('yahoo_finance', {}).get('tickers', [])
+            if tickers:
+                return ','.join(tickers)
+    
+    # Fallback to default
+    return "AAPL,MSFT,GOOGL,AMZN,TSLA"
 
 
 class Settings(BaseSettings):
@@ -36,8 +65,8 @@ class Settings(BaseSettings):
     
     # Streaming configuration
     tickers: str = Field(
-        default="AAPL,MSFT,GOOGL,AMZN,TSLA",
-        description="Comma-separated tickers to stream"
+        default_factory=load_tickers_from_yaml,
+        description="Comma-separated tickers to stream (loaded from YAML if not set)"
     )
     polling_interval: int = Field(
         default=5,

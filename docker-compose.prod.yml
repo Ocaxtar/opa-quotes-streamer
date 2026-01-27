@@ -13,7 +13,8 @@ services:
       - "9001:8001"  # Prometheus metrics (9001 externo para no chocar con otros servicios)
     environment:
       # Tickers configuration (300 tickers S&P 500)
-      CONFIG_PATH: "/app/config/streaming-300.yaml"
+      # CONFIG_PATH no se usa actualmente, se carga via código
+      # TICKERS se elimina para forzar lectura desde streaming-300.yaml
       POLLING_INTERVAL: "60"  # 60 segundos (yfinance rate limit)
       
       # PostgreSQL connection (direct to TimescaleDB)
