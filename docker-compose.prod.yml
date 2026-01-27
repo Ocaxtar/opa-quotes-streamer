@@ -25,7 +25,7 @@ services:
       REDIS_PUBLISHER_ENABLED: "true"
       
       # Storage publisher (via opa-quotes-api)
-      PUBLISHER_ENABLED: "true"
+      PUBLISHER_ENABLED: "false"
       STORAGE_API_URL: "http://host.docker.internal:8000"
       
       # Rate limiting (yfinance free tier)
@@ -41,7 +41,7 @@ services:
       
       # Logging
       LOG_LEVEL: "INFO"
-      ENVIRONMENT: "production"
+      ENVIRONMENT: "prod"
       
       # Python
       PYTHONUNBUFFERED: "1"
@@ -71,7 +71,7 @@ services:
           memory: 1G
     
     # Depends on external services (not managed by this compose)
-    # TimescaleDB: opa-timescaledb (5433)
+    # TimescaleDB: opa-quotes-storage-dev (5433)
     # Redis: opa-redis (6381)
     # opa-quotes-api: (8000)
     depends_on: []

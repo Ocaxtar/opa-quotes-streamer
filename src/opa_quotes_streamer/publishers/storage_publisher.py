@@ -136,8 +136,21 @@ class StoragePublisher(BasePublisher):
             httpx.HTTPStatusError: If HTTP request fails
             httpx.RequestError: If network request fails
         """
-        # Convert quotes to dict format
-        quotes_data = [q.model_dump(mode='json') for q in quotes]
+        # Convert quotes to dict format compatible with opa-quotes-api schema
+        quotes_data = []
+        for q in quotes:
+            quote_dict = {
+                "ticker": q.ticker,
+                "timestamp": q.timestamp.isoformat() if hasattr(q.timestamp, 'isoformat') else q.timestamp,
+                "close": q.price,  # Map price → close for API compatibility
+                "open": q.open,
+                "high": q.high,
+                "low": q.low,
+                "volume": q.volume,
+                "source": q.source
+            }
+            quotes_data.append(quote_dict)
+        
         payload = {"quotes": quotes_data}
         
         logger.debug(f"Posting {len(quotes_data)} quotes to {self.storage_url}/v1/quotes/batch")
