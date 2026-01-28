@@ -64,3 +64,6 @@ Thumbs.db
 *.tmp
 *.bak
 *.swp
+
+# VS Code workspace files
+*.code-workspace
