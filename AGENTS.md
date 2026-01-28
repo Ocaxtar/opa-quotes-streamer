@@ -35,6 +35,7 @@ Implementar y operar pipelines de streaming de alta frecuencia (300 tickers Fase
 | 🔄 **Sincronizar workspace** | Script `scripts/git/check_sync.sh` (incluye activación MCP) | ⚠️ **INICIO DE CADA RUN** |
 | Consultar infraestructura | [opa-infrastructure-state](https://github.com/Ocaxtar/opa-infrastructure-state) | ⚠️ **ANTES** de Docker/DB/Redis |
 | Operar Docker/conexiones | Ver [service-inventory.md](https://github.com/Ocaxtar/opa-supervisor/blob/main/docs/infrastructure/service-inventory.md) | ⚠️ **SIEMPRE** antes de Docker |
+| Gestión segura Docker | Skill global `docker-safe-operations` | ⚠️ **ANTES** de docker-compose down -v, operaciones con volúmenes |
 | Trabajar en issue | Skill global `git-linear-workflow` | Antes de branch/commit |
 | Usar Linear MCP tools | Skill global `linear-mcp-tool` | Si tool falla/necesitas categorías extra |
 
