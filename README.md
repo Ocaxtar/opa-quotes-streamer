@@ -128,7 +128,7 @@ STORAGE_API_URL=http://localhost:8000
 
 # Redis Pub/Sub configuration (Fase 2)
 REDIS_URL=redis://localhost:6381
-REDIS_CHANNEL=quotes-stream
+REDIS_CHANNEL=quotes.realtime
 REDIS_PUBLISHER_ENABLED=true
 
 # Rate limiting (aumentado para 300 tickers)

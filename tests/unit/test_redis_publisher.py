@@ -45,7 +45,7 @@ class TestRedisPublisher:
         publisher = RedisPublisher()
         
         assert publisher.redis_url == "redis://localhost:6381"
-        assert publisher.channel == "quotes-stream"
+        assert publisher.channel == "quotes.realtime"
         assert publisher._circuit_breaker is not None
         assert publisher._client is None
     
@@ -174,7 +174,7 @@ class TestRedisPublisher:
         first_call = mock_redis.publish.call_args_list[0]
         channel, payload = first_call[0]
         
-        assert channel == "quotes-stream"
+        assert channel == "quotes.realtime"
         
         event = json.loads(payload)
         assert event["specversion"] == "1.0"

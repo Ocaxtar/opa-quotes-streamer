@@ -60,7 +60,7 @@ class RedisPublisher(BasePublisher):
     
     Attributes:
         redis_url: Redis connection URL (default: redis://localhost:6381)
-        channel: Redis channel name (default: quotes-stream)
+        channel: Redis channel name (default: quotes.realtime)
         circuit_breaker: Circuit breaker for Redis operations
     
     Example:
@@ -72,7 +72,7 @@ class RedisPublisher(BasePublisher):
     def __init__(
         self,
         redis_url: str = "redis://localhost:6381",
-        channel: str = "quotes-stream",
+        channel: str = "quotes.realtime",
         circuit_breaker: Optional[CircuitBreaker] = None
     ):
         """Initialize Redis publisher.
