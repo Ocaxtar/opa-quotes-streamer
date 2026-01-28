@@ -74,7 +74,7 @@ class Settings(BaseSettings):
         description="Redis connection URL for Pub/Sub"
     )
     redis_channel: str = Field(
-        default="quotes-stream",
+        default="quotes.realtime",
         description="Redis channel for quote events"
     )
     redis_publisher_enabled: bool = Field(
