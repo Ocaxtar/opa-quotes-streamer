@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # OPA Quotes Streamer - Production deployment
+  streamer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: opa-quotes-streamer:prod
+    container_name: opa-quotes-streamer
+    ports:
+      - "9001:8001"  # Prometheus metrics (9001 externo para no chocar con otros servicios)
+    environment:
+      # Tickers configuration (300 tickers S&P 500)
+      # CONFIG_PATH no se usa actualmente, se carga via código
+      # TICKERS se elimina para forzar lectura desde streaming-300.yaml
+      POLLING_INTERVAL: "60"  # 60 segundos (yfinance rate limit)
+      
+      # PostgreSQL connection (direct to TimescaleDB)
+      DATABASE_URL: "postgresql://opa_user:opa_password@host.docker.internal:5433/opa_quotes"
+      
+      # Redis Pub/Sub
+      REDIS_URL: "redis://host.docker.internal:6381"
+      REDIS_CHANNEL: "quotes:stream"
+      REDIS_PUBLISHER_ENABLED: "true"
+      
+      # Storage publisher (via opa-quotes-api)
+      PUBLISHER_ENABLED: "false"
+      STORAGE_API_URL: "http://host.docker.internal:8000"
+      
+      # Rate limiting (yfinance free tier)
+      MAX_REQUESTS_PER_HOUR: "2000"
+      
+      # Circuit breaker
+      CIRCUIT_BREAKER_THRESHOLD: "5"
+      CIRCUIT_BREAKER_TIMEOUT: "60"
+      STORAGE_TIMEOUT: "30"
+      
+      # Metrics
+      METRICS_PORT: "8001"
+      
+      # Logging
+      LOG_LEVEL: "INFO"
+      ENVIRONMENT: "prod"
+      
+      # Python
+      PYTHONUNBUFFERED: "1"
+      PYTHONPATH: "/app/src"
+    
+    volumes:
+      # Mount config file with 300 tickers
+      - ./config/streaming-300.yaml:/app/config/streaming-300.yaml:ro
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/metrics')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Resource limits (300 tickers concurrentes)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    
+    # Depends on external services (not managed by this compose)
+    # TimescaleDB: opa-quotes-storage-dev (5433)
+    # Redis: opa-redis (6381)
+    # opa-quotes-api: (8000)
+    depends_on: []

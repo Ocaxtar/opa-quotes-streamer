@@ -42,9 +42,9 @@ RUN useradd -m -u 1000 streamer && \
 USER streamer
 
 # Environment variables (overridable)
+# TICKERS no se define aquí, se carga desde streaming-300.yaml via config.py
 ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/src \
-    TICKERS="AAPL,MSFT,GOOGL,AMZN,TSLA" \
     POLLING_INTERVAL=5 \
     STORAGE_API_URL="http://localhost:8000" \
     MAX_REQUESTS_PER_HOUR=2000 \
